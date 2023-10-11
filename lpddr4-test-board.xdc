@@ -207,6 +207,10 @@ set_property IOSTANDARD LVCMOS33 [get_ports {user_led4}]
 set_property LOC E8 [get_ports {user_btn0}]
 set_property IOSTANDARD LVCMOS33 [get_ports {user_btn0}]
 
+# user_btn:1
+set_property LOC B8 [get_ports {user_btn1}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_btn1}]
+
 ################################################################################
 # Design constraints
 ################################################################################
