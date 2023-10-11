@@ -1,0 +1,3 @@
+[submodule "third_party/tristan-dram-phy"]
+	path = third_party/tristan-dram-phy
+	url = ../tristan-dram-phy.git
