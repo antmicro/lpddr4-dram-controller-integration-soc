@@ -1,4 +1,5 @@
-VIVADO       ?= /opt/Xilinx/Vivado/2020.2
+VIVADO_VER   ?= 2020.2
+VIVADO       ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
 
 BITSTREAM     = build/top.bit
 GENERATED_RTL = build/dram_phy/gateware/dram_phy.v
@@ -6,7 +7,7 @@ GENERATED_RTL = build/dram_phy/gateware/dram_phy.v
 all: soc bitstream
 
 deps:
-	for D in `find ./deps/ -type d`; do \
+	for D in `find ./third_party/ -type d`; do \
 		if [ -f $$D/setup.py ]; then \
 			pip install -e $$D; \
 		fi; \
@@ -31,6 +32,7 @@ load: $(BITSTREAM)
 	openocd -f ./prog/openocd_xc7_ft4232.cfg -c "init; pld load 0 $(BITSTREAM); exit"
 
 clean:
-	rm -rf build
+	-rm -rf build
+	-rm vivado*
 
 .PHONY: deps soc bitstream load clean
