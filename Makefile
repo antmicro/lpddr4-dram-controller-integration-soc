@@ -17,7 +17,8 @@ build:
 	mkdir -p $@
 
 build/dram_phy/gateware/dram_phy.v: | build
-	./third_party/tristan-dram-phy/src/gen.py ./third_party/tristan-dram-phy/src/standalone-dfi.yml --output build/dram_phy
+	./third_party/tristan-dram-phy/src/gen.py ./third_party/tristan-dram-phy/src/standalone-dfi.yml 1 --output build/dram_phy
+	./third_party/tristan-dram-phy/src/gen.py ./third_party/tristan-dram-phy/src/standalone-dfi.yml 2 --output build/dram_phy
 
 soc: $(GENERATED_RTL)
 
