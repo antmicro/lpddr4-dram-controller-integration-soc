@@ -1,5 +1,6 @@
 # read design sources (add one line for each file)
 read_verilog "build/dram_phy/gateware/dram_phy.v"
+read_verilog "build/dram_ctrl/gateware/dram_ctrl.v"
 #read_verilog "build/dram_phy/gateware/dram_phy_mem.init"
 #read_verilog "build/dram_phy/gateware/dram_phy_sram.init"
 #read_verilog "build/dram_phy/gateware/dram_phy_rom.init"

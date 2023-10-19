@@ -16,9 +16,12 @@ deps:
 build:
 	mkdir -p $@
 
+build/dram_ctrl/gateware/dram_ctrl.v: | build
+	./third_party/tristan-dram-controller/gen.py ./tristan-ctrl.yml --output build/dram_ctrl
+
 build/dram_phy/gateware/dram_phy.v: | build
-	./third_party/tristan-dram-phy/src/gen.py ./third_party/tristan-dram-phy/src/standalone-dfi.yml 1 --output build/dram_phy
-	./third_party/tristan-dram-phy/src/gen.py ./third_party/tristan-dram-phy/src/standalone-dfi.yml 2 --output build/dram_phy
+	./third_party/tristan-dram-phy/src/gen.py ./tristan-phy.yml 1 --output build/dram_phy
+	./third_party/tristan-dram-phy/src/gen.py ./tristan-phy.yml 2 --output build/dram_phy
 
 soc: $(GENERATED_RTL)
 

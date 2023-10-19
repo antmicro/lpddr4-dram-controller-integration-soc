@@ -6,12 +6,20 @@ set_property LOC L19 [get_ports {clk100}]
 set_property IOSTANDARD LVCMOS33 [get_ports {clk100}]
 
 # serial:0.tx
-set_property LOC AB18 [get_ports {serial_tx}]
-set_property IOSTANDARD LVCMOS33 [get_ports {serial_tx}]
+set_property LOC AB18 [get_ports {serial0_tx}]
+set_property IOSTANDARD LVCMOS33 [get_ports {serial0_tx}]
 
 # serial:0.rx
-set_property LOC AA18 [get_ports {serial_rx}]
-set_property IOSTANDARD LVCMOS33 [get_ports {serial_rx}]
+set_property LOC AA18 [get_ports {serial0_rx}]
+set_property IOSTANDARD LVCMOS33 [get_ports {serial0_rx}]
+
+# serial:1.tx
+set_property LOC AA20 [get_ports {serial1_tx}]
+set_property IOSTANDARD LVCMOS33 [get_ports {serial1_tx}]
+
+# serial:1.rx
+set_property LOC AB20 [get_ports {serial1_rx}]
+set_property IOSTANDARD LVCMOS33 [get_ports {serial1_rx}]
 
 # lpddr4:0.clk_p
 set_property LOC Y3 [get_ports {lpddr4_clk_p}]
@@ -210,6 +218,14 @@ set_property IOSTANDARD LVCMOS33 [get_ports {user_btn0}]
 # user_btn:1
 set_property LOC B8 [get_ports {user_btn1}]
 set_property IOSTANDARD LVCMOS33 [get_ports {user_btn1}]
+
+# user_btn:2
+set_property LOC C9 [get_ports {user_btn2}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_btn2}]
+
+# user_btn:3
+set_property LOC E9 [get_ports {user_btn3}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_btn3}]
 
 ################################################################################
 # Design constraints
