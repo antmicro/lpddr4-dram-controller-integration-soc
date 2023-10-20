@@ -2,7 +2,9 @@ VIVADO_VER   ?= 2020.2
 VIVADO       ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
 
 BITSTREAM     = build/top.bit
-GENERATED_RTL = build/dram_phy/gateware/dram_phy.v
+GENERATED_RTL = build/dram_phy/gateware/dram_phy.v \
+    build/dram_ctrl/gateware/dram_ctrl.v \
+    build/antmicro_lpddr4_test_board/gateware/antmicro_lpddr4_test_board.v
 
 all: soc bitstream
 
@@ -22,6 +24,9 @@ build/dram_ctrl/gateware/dram_ctrl.v: | build
 build/dram_phy/gateware/dram_phy.v: | build
 	./third_party/tristan-dram-phy/src/gen.py ./tristan-phy.yml 1 --output build/dram_phy
 	./third_party/tristan-dram-phy/src/gen.py ./tristan-phy.yml 2 --output build/dram_phy
+
+build/antmicro_lpddr4_test_board/gateware/antmicro_lpddr4_test_board.v: | build
+	./src/demosoc.py
 
 soc: $(GENERATED_RTL)
 

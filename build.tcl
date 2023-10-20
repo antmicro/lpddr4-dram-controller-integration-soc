@@ -1,9 +1,7 @@
 # read design sources (add one line for each file)
 read_verilog "build/dram_phy/gateware/dram_phy.v"
 read_verilog "build/dram_ctrl/gateware/dram_ctrl.v"
-#read_verilog "build/dram_phy/gateware/dram_phy_mem.init"
-#read_verilog "build/dram_phy/gateware/dram_phy_sram.init"
-#read_verilog "build/dram_phy/gateware/dram_phy_rom.init"
+read_verilog "build/antmicro_lpddr4_test_board/gateware/antmicro_lpddr4_test_board.v"
 read_verilog "third_party/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv/verilog/VexRiscv_Min.v"
 read_verilog "rtl/top.v"
 
