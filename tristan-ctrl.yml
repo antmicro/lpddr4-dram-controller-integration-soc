@@ -6,8 +6,8 @@
     "speedgrade": -1,          # FPGA speedgrade
 
     # SDRAM --------------------------------------------------------------------
-    "memtype":          "LPDDR4"       # DRAM type
-    "sdram_module":     "MT53E256M16D1" # SDRAM modules of the board or SO-DIMM
+    "memtype":          "LPDDR4",        # DRAM type
+    "sdram_module":     "MT53E256M16D1", # SDRAM modules of the board or SO-DIMM
     "sdram_data_nb":    16,            # Number of data bits
     "sdram_module_nb":  2,             # Number of byte groups
     "sdram_rank_nb":    1,             # Number of ranks
