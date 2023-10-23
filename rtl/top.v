@@ -202,7 +202,8 @@ wire        wb_dram_we;
 wire  [2:0] wb_dram_cti;
 wire  [1:0] wb_dram_bte;
 wire        wb_dram_err;
-wire [26:0] wb_ctrl_adr;
+
+wire [31:0] wb_ctrl_adr;
 wire [31:0] wb_ctrl_dat_w;
 wire [31:0] wb_ctrl_dat_r;
 wire  [3:0] wb_ctrl_sel;
@@ -612,7 +613,7 @@ antmicro_lpddr4_test_board demo_soc (
     .wb_ctrl_bte    (wb_ctrl_bte  ),
     .wb_ctrl_err    (wb_ctrl_err  ),
     .serial1_tx     (serial1_tx),
-    .serial1_rx     (serial1_tx)
+    .serial1_rx     (serial1_rx)
 );
 
 endmodule

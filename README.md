@@ -50,4 +50,14 @@ make load
 ```
 Some LEDs should light up. Refer to `rtl/top.v` for their meaning.
 
-First UART is connected to DRAM PHY, second UART will be connected to application SoC w/ DRAM controller.
+First UART is connected to demo SoC UART, second UART will be connected to demo SoC UARTBone.
+
+Initialize the DRAM controller.
+
+**For now this step is performed by the** `scripts/dram_init.py` **script and requires a 2nd UART to be connected to the board. The UART is available on the J14 connector (J14.4 - TX, J14.6 - RX, J14.9 - GND).**
+
+```
+./scripts/dram_init.py
+```
+
+The DRAM is mapped at 0x40000000 and above. You may test its operation by issuing `mem_read` and `mem_write` commands to the SoC terminal (LiteX BIOS).

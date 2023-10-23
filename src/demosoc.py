@@ -112,7 +112,7 @@ class BaseSoC(SoCCore):
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    soc = BaseSoC(sys_clk_freq = 75e6)
+    soc = BaseSoC(sys_clk_freq = 50e6)
     builder = Builder(soc, compile_software=True, compile_gateware=False, csr_csv="csr.csv")
     builder.build()
 
