@@ -18,11 +18,6 @@ def dram_init(wb):
 
     print("Initializing DRAM...")
 
-    def dfi_command(cmd):
-        print(" DRAM cmd 0x{:02X}".format(cmd))
-        wb.regs.dram_ctrl_dfii_pi0_command.write(cmd)
-        wb.regs.dram_ctrl_dfii_pi0_command_issue.write(1)
-
     print(" Setting timings...")
     wb.regs.dram_ctrl_controller_tRP.write   (  2)
     wb.regs.dram_ctrl_controller_tRCD.write  (  2)
@@ -36,9 +31,8 @@ def dram_init(wb):
     wb.regs.dram_ctrl_controller_tRC.write   (  5)
     wb.regs.dram_ctrl_controller_tRAS.write  (  3)
     #wb.regs.dram_ctrl_controller_tZQCS.write ( 32)
-
-    print(" SW control...")
-    wb.regs.dram_ctrl_dfii_control.write(0xE) # RST | CKE | ODT
+    wb.regs.ddrphy_rdphase.write(6)
+    wb.regs.ddrphy_wrphase.write(6)
 
     print(" DRAM chip reset...")
     wb.regs.ddrphy_rst.write(1)
@@ -46,19 +40,11 @@ def dram_init(wb):
     wb.regs.ddrphy_rst.write(0)
     time.sleep(0.1)
 
-    print(" SW control (#2)...")
-    wb.regs.dram_ctrl_dfii_control.write(0x8) # RST
-
-    dfi_command(0x0) # To set CS high
-
     print(" PHY training...")
     wb.regs.dram_ctrl_controller_phy_ctl.write(1)
     while True:
         res = wb.regs.dram_ctrl_controller_phy_sts.read()
         if res: break
-
-    print(" HW control...")
-    wb.regs.dram_ctrl_dfii_control.write(0x1)
 
     print(" Setting status regs...")
     wb.regs.ddrctrl_init_done.write(1)

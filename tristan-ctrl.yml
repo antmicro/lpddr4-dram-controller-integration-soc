@@ -23,6 +23,14 @@
     "dfi_addressbits":  15,
     "dfi_bankbits":     3,
 
+    "cl":               10,
+    "cwl":              6,
+    "cmd_latency":      4,
+    "write_latency":    2,
+    "read_latency":     10,
+    "rdphase":          6,
+    "wrphase":          6,
+
     # Frequency ----------------------------------------------------------------
     "sys_clk_freq":     50e6,  # System clock frequency
 
