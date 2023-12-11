@@ -35,6 +35,7 @@ class LPDDR4IntegrationSoC(SoC):
         self.comb += self.lpddr4_wb_ic.interfaces["wb_dram"].connect(wb_bus_dram)
         self.comb += self.lpddr4_wb_ic.interfaces["wb_ctrl"].connect(wb_bus_ctrl)
 
+        self.ios.update([self.crg.cd_sys.clk, self.crg.cd_sys.rst])
         self.ios.update(wb_bus_dram.flatten())
         self.ios.update(wb_bus_ctrl.flatten())
 

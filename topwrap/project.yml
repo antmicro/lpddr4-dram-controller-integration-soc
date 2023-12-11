@@ -3,13 +3,13 @@
 
 ips:
   dram_ctrl_inst:
-    file: ../build/dram_ctrl/gateware/dram_ctrl.v
+    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_dram_ctrl.yaml
     module: dram_ctrl
   phy_core_inst:
-    file: ../build/generated/gateware/phy_core.v
+    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_dram_phy.yaml
     module: phy_core
   lpddr4_soc_inst:
-    file: ../build/generated/gateware/lpddr4_soc.v
+    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_top.yaml
     module: lpddr4_soc
 
 design:
@@ -26,24 +26,24 @@ design:
       wb_bus_ctrl_err: [dram_ctrl_inst, wb_ctrl_err]
 
     dram_ctrl_inst:
-      clk: [lpddr4_soc, sys_clk]
-      rst: [lpddr4_soc, sys_rst]
+      clk: [lpddr4_soc_inst, sys_clk]
+      rst: [lpddr4_soc_inst, sys_rst]
 
-      wb_ctrl_adr: [lpddr4_soc, wb_ctrl_adr]
-      wb_ctrl_dat_w: [lpddr4_soc, wb_ctrl_dat_w]
-      wb_ctrl_sel: [lpddr4_soc, wb_ctrl_sel]
-      wb_ctrl_cyc: [lpddr4_soc, wb_ctrl_cyc]
-      wb_ctrl_stb: [lpddr4_soc, wb_ctrl_stb]
-      wb_ctrl_we: [lpddr4_soc, wb_ctrl_we]
-      wb_ctrl_cti: [lpddr4_soc, wb_ctrl_cti]
-      wb_ctrl_bte: [lpddr4_soc, wb_ctrl_bte]
+      wb_ctrl_adr: [lpddr4_soc_inst, wb_bus_ctrl_adr]
+      wb_ctrl_dat_w: [lpddr4_soc_inst, wb_bus_ctrl_dat_w]
+      wb_ctrl_sel: [lpddr4_soc_inst, wb_bus_ctrl_sel]
+      wb_ctrl_cyc: [lpddr4_soc_inst, wb_bus_ctrl_cyc]
+      wb_ctrl_stb: [lpddr4_soc_inst, wb_bus_ctrl_stb]
+      wb_ctrl_we: [lpddr4_soc_inst, wb_bus_ctrl_we]
+      wb_ctrl_cti: [lpddr4_soc_inst, wb_bus_ctrl_cti]
+      wb_ctrl_bte: [lpddr4_soc_inst, wb_bus_ctrl_bte]
 
-      user_port_wishbone_0_adr: [lpddr4_soc, wb_dram_adr]
-      user_port_wishbone_0_dat_w: [lpddr4_soc, wb_dram_dat_w]
-      user_port_wishbone_0_sel: [lpddr4_soc, wb_dram_sel]
-      user_port_wishbone_0_cyc: [lpddr4_soc, wb_dram_cyc]
-      user_port_wishbone_0_stb: [lpddr4_soc, wb_dram_stb]
-      user_port_wishbone_0_we: [lpddr4_soc, wb_dram_we]
+      user_port_wishbone_0_adr: [lpddr4_soc_inst, wb_bus_dram_adr]
+      user_port_wishbone_0_dat_w: [lpddr4_soc_inst, wb_bus_dram_dat_w]
+      user_port_wishbone_0_sel: [lpddr4_soc_inst, wb_bus_dram_sel]
+      user_port_wishbone_0_cyc: [lpddr4_soc_inst, wb_bus_dram_cyc]
+      user_port_wishbone_0_stb: [lpddr4_soc_inst, wb_bus_dram_stb]
+      user_port_wishbone_0_we: [lpddr4_soc_inst, wb_bus_dram_we]
 
       dfi_init_complete: [phy_core_inst, dfi_init_complete]
 
@@ -79,10 +79,165 @@ design:
       dfi_rddata_w7: [phy_core_inst, dfi_rddata_w7]
       dfi_rddata_valid_w7: [phy_core_inst, dfi_rddata_valid_w7]
 
+    phy_core_inst:
+      clk: clk100
+      rst: usr_btn0
+      serial_rx: serial1_rx
+
+      ddram_dq: lpddr4_dq
+      ddram_dqs_p: lpddr4_dqs_p
+      ddram_dqs_n: lpddr4_dqs_n
+      ddram_dmi: lpddr4_dmi
+      ddram_clk_p: lpddr4_clk_p
+      ddram_clk_n: lpddr4_clk_n
+      ddram_cke: lpddr4_cke
+      ddram_odt: lpddr4_odt
+      ddram_reset_n: lpddr4_reset_n
+
+      dfi_init_start: [dram_ctrl_inst, dfi_init_start]
+
+      dfi_cke_p0: [dram_ctrl_inst, dfi_cke_p0]
+      dfi_reset_n_p0: [dram_ctrl_inst, dfi_reset_n_p0]
+      dfi_mode_2n_p0: [dram_ctrl_inst, dfi_mode_2n_p0]
+      dfi_address_p0: [dram_ctrl_inst, dfi_address_p0]
+      dfi_bank_p0: [dram_ctrl_inst, dfi_bank_p0]
+      dfi_cas_n_p0: [dram_ctrl_inst, dfi_cas_n_p0]
+      dfi_cs_n_p0: [dram_ctrl_inst, dfi_cs_n_p0]
+      dfi_ras_n_p0: [dram_ctrl_inst, dfi_ras_n_p0]
+      dfi_act_n_p0: [dram_ctrl_inst, dfi_act_n_p0]
+      dfi_odt_p0: [dram_ctrl_inst, dfi_odt_p0]
+      dfi_we_n_p0: [dram_ctrl_inst, dfi_we_n_p0]
+      dfi_wrdata_p0: [dram_ctrl_inst, dfi_wrdata_p0]
+      dfi_wrdata_en_p0: [dram_ctrl_inst, dfi_wrdata_en_p0]
+      dfi_wrdata_mask_p0: [dram_ctrl_inst, dfi_wrdata_mask_p0]
+      dfi_rddata_en_p0: [dram_ctrl_inst, dfi_rddata_en_p0]
+
+      dfi_cke_p1: [dram_ctrl_inst, dfi_cke_p1]
+      dfi_reset_n_p1: [dram_ctrl_inst, dfi_reset_n_p1]
+      dfi_mode_2n_p1: [dram_ctrl_inst, dfi_mode_2n_p1]
+      dfi_address_p1: [dram_ctrl_inst, dfi_address_p1]
+      dfi_bank_p1: [dram_ctrl_inst, dfi_bank_p1]
+      dfi_cas_n_p1: [dram_ctrl_inst, dfi_cas_n_p1]
+      dfi_cs_n_p1: [dram_ctrl_inst, dfi_cs_n_p1]
+      dfi_ras_n_p1: [dram_ctrl_inst, dfi_ras_n_p1]
+      dfi_act_n_p1: [dram_ctrl_inst, dfi_act_n_p1]
+      dfi_odt_p1: [dram_ctrl_inst, dfi_odt_p1]
+      dfi_we_n_p1: [dram_ctrl_inst, dfi_we_n_p1]
+      dfi_wrdata_p1: [dram_ctrl_inst, dfi_wrdata_p1]
+      dfi_wrdata_en_p1: [dram_ctrl_inst, dfi_wrdata_en_p1]
+      dfi_wrdata_mask_p1: [dram_ctrl_inst, dfi_wrdata_mask_p1]
+      dfi_rddata_en_p1: [dram_ctrl_inst, dfi_rddata_en_p1]
+
+      dfi_cke_p2: [dram_ctrl_inst, dfi_cke_p2]
+      dfi_reset_n_p2: [dram_ctrl_inst, dfi_reset_n_p2]
+      dfi_mode_2n_p2: [dram_ctrl_inst, dfi_mode_2n_p2]
+      dfi_address_p2: [dram_ctrl_inst, dfi_address_p2]
+      dfi_bank_p2: [dram_ctrl_inst, dfi_bank_p2]
+      dfi_cas_n_p2: [dram_ctrl_inst, dfi_cas_n_p2]
+      dfi_cs_n_p2: [dram_ctrl_inst, dfi_cs_n_p2]
+      dfi_ras_n_p2: [dram_ctrl_inst, dfi_ras_n_p2]
+      dfi_act_n_p2: [dram_ctrl_inst, dfi_act_n_p2]
+      dfi_odt_p2: [dram_ctrl_inst, dfi_odt_p2]
+      dfi_we_n_p2: [dram_ctrl_inst, dfi_we_n_p2]
+      dfi_wrdata_p2: [dram_ctrl_inst, dfi_wrdata_p2]
+      dfi_wrdata_en_p2: [dram_ctrl_inst, dfi_wrdata_en_p2]
+      dfi_wrdata_mask_p2: [dram_ctrl_inst, dfi_wrdata_mask_p2]
+      dfi_rddata_en_p2: [dram_ctrl_inst, dfi_rddata_en_p2]
+
+      dfi_cke_p3: [dram_ctrl_inst, dfi_cke_p3]
+      dfi_reset_n_p3: [dram_ctrl_inst, dfi_reset_n_p3]
+      dfi_mode_2n_p3: [dram_ctrl_inst, dfi_mode_2n_p3]
+      dfi_address_p3: [dram_ctrl_inst, dfi_address_p3]
+      dfi_bank_p3: [dram_ctrl_inst, dfi_bank_p3]
+      dfi_cas_n_p3: [dram_ctrl_inst, dfi_cas_n_p3]
+      dfi_cs_n_p3: [dram_ctrl_inst, dfi_cs_n_p3]
+      dfi_ras_n_p3: [dram_ctrl_inst, dfi_ras_n_p3]
+      dfi_act_n_p3: [dram_ctrl_inst, dfi_act_n_p3]
+      dfi_odt_p3: [dram_ctrl_inst, dfi_odt_p3]
+      dfi_we_n_p3: [dram_ctrl_inst, dfi_we_n_p3]
+      dfi_wrdata_p3: [dram_ctrl_inst, dfi_wrdata_p3]
+      dfi_wrdata_en_p3: [dram_ctrl_inst, dfi_wrdata_en_p3]
+      dfi_wrdata_mask_p3: [dram_ctrl_inst, dfi_wrdata_mask_p3]
+      dfi_rddata_en_p3: [dram_ctrl_inst, dfi_rddata_en_p3]
+
+      dfi_cke_p4: [dram_ctrl_inst, dfi_cke_p4]
+      dfi_reset_n_p4: [dram_ctrl_inst, dfi_reset_n_p4]
+      dfi_mode_2n_p4: [dram_ctrl_inst, dfi_mode_2n_p4]
+      dfi_address_p4: [dram_ctrl_inst, dfi_address_p4]
+      dfi_bank_p4: [dram_ctrl_inst, dfi_bank_p4]
+      dfi_cas_n_p4: [dram_ctrl_inst, dfi_cas_n_p4]
+      dfi_cs_n_p4: [dram_ctrl_inst, dfi_cs_n_p4]
+      dfi_ras_n_p4: [dram_ctrl_inst, dfi_ras_n_p4]
+      dfi_act_n_p4: [dram_ctrl_inst, dfi_act_n_p4]
+      dfi_odt_p4: [dram_ctrl_inst, dfi_odt_p4]
+      dfi_we_n_p4: [dram_ctrl_inst, dfi_we_n_p4]
+      dfi_wrdata_p4: [dram_ctrl_inst, dfi_wrdata_p4]
+      dfi_wrdata_en_p4: [dram_ctrl_inst, dfi_wrdata_en_p4]
+      dfi_wrdata_mask_p4: [dram_ctrl_inst, dfi_wrdata_mask_p4]
+      dfi_rddata_en_p4: [dram_ctrl_inst, dfi_rddata_en_p4]
+
+      dfi_cke_p5: [dram_ctrl_inst, dfi_cke_p5]
+      dfi_reset_n_p5: [dram_ctrl_inst, dfi_reset_n_p5]
+      dfi_mode_2n_p5: [dram_ctrl_inst, dfi_mode_2n_p5]
+      dfi_address_p5: [dram_ctrl_inst, dfi_address_p5]
+      dfi_bank_p5: [dram_ctrl_inst, dfi_bank_p5]
+      dfi_cas_n_p5: [dram_ctrl_inst, dfi_cas_n_p5]
+      dfi_cs_n_p5: [dram_ctrl_inst, dfi_cs_n_p5]
+      dfi_ras_n_p5: [dram_ctrl_inst, dfi_ras_n_p5]
+      dfi_act_n_p5: [dram_ctrl_inst, dfi_act_n_p5]
+      dfi_odt_p5: [dram_ctrl_inst, dfi_odt_p5]
+      dfi_we_n_p5: [dram_ctrl_inst, dfi_we_n_p5]
+      dfi_wrdata_p5: [dram_ctrl_inst, dfi_wrdata_p5]
+      dfi_wrdata_en_p5: [dram_ctrl_inst, dfi_wrdata_en_p5]
+      dfi_wrdata_mask_p5: [dram_ctrl_inst, dfi_wrdata_mask_p5]
+      dfi_rddata_en_p5: [dram_ctrl_inst, dfi_rddata_en_p5]
+
+      dfi_cke_p6: [dram_ctrl_inst, dfi_cke_p6]
+      dfi_reset_n_p6: [dram_ctrl_inst, dfi_reset_n_p6]
+      dfi_mode_2n_p6: [dram_ctrl_inst, dfi_mode_2n_p6]
+      dfi_address_p6: [dram_ctrl_inst, dfi_address_p6]
+      dfi_bank_p6: [dram_ctrl_inst, dfi_bank_p6]
+      dfi_cas_n_p6: [dram_ctrl_inst, dfi_cas_n_p6]
+      dfi_cs_n_p6: [dram_ctrl_inst, dfi_cs_n_p6]
+      dfi_ras_n_p6: [dram_ctrl_inst, dfi_ras_n_p6]
+      dfi_act_n_p6: [dram_ctrl_inst, dfi_act_n_p6]
+      dfi_odt_p6: [dram_ctrl_inst, dfi_odt_p6]
+      dfi_we_n_p6: [dram_ctrl_inst, dfi_we_n_p6]
+      dfi_wrdata_p6: [dram_ctrl_inst, dfi_wrdata_p6]
+      dfi_wrdata_en_p6: [dram_ctrl_inst, dfi_wrdata_en_p6]
+      dfi_wrdata_mask_p6: [dram_ctrl_inst, dfi_wrdata_mask_p6]
+      dfi_rddata_en_p6: [dram_ctrl_inst, dfi_rddata_en_p6]
+
+      dfi_cke_p7: [dram_ctrl_inst, dfi_cke_p7]
+      dfi_reset_n_p7: [dram_ctrl_inst, dfi_reset_n_p7]
+      dfi_mode_2n_p7: [dram_ctrl_inst, dfi_mode_2n_p7]
+      dfi_address_p7: [dram_ctrl_inst, dfi_address_p7]
+      dfi_bank_p7: [dram_ctrl_inst, dfi_bank_p7]
+      dfi_cas_n_p7: [dram_ctrl_inst, dfi_cas_n_p7]
+      dfi_cs_n_p7: [dram_ctrl_inst, dfi_cs_n_p7]
+      dfi_ras_n_p7: [dram_ctrl_inst, dfi_ras_n_p7]
+      dfi_act_n_p7: [dram_ctrl_inst, dfi_act_n_p7]
+      dfi_odt_p7: [dram_ctrl_inst, dfi_odt_p7]
+      dfi_we_n_p7: [dram_ctrl_inst, dfi_we_n_p7]
+      dfi_wrdata_p7: [dram_ctrl_inst, dfi_wrdata_p7]
+      dfi_wrdata_en_p7: [dram_ctrl_inst, dfi_wrdata_en_p7]
+      dfi_wrdata_mask_p7: [dram_ctrl_inst, dfi_wrdata_mask_p7]
+      dfi_rddata_en_p7: [dram_ctrl_inst, dfi_rddata_en_p7]
+
 external:
   ports:
     in:
       - clk100
+      - usr_btn0
       - serial1_rx
+      - lpddr4_dq
+      - lpddr4_dqs_p
+      - lpddr4_dqs_n
+      - lpddr4_dmi
     out:
       - serial1_tx
+      - lpddr4_clk_p
+      - lpddr4_clk_n
+      - lpddr4_cke
+      - lpddr4_odt
+      - lpddr4_reset_n
