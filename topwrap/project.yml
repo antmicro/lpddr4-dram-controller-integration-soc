@@ -7,43 +7,50 @@ ips:
     module: dram_ctrl
   phy_core_inst:
     file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_dram_phy.yaml
-    module: phy_core
+    module: dram_phy
   lpddr4_soc_inst:
     file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_top.yaml
-    module: lpddr4_soc
+    module: top
 
 design:
   ports:
     lpddr4_soc_inst:
+      clk: clk100
+      sys_rst: user_btn0
+
+      serial0_rx: serial0_rx
+      serial0_tx: serial0_tx
+
       serial1_rx: serial1_rx
+      serial1_tx: serial1_tx
 
-      wb_bus_dram_dat_r: [dram_ctrl_inst, user_port_wishbone_0_dat_r]
-      wb_bus_dram_ack: [dram_ctrl_inst, user_port_wishbone_0_ack]
-      wb_bus_dram_err: [dram_ctrl_inst, user_port_wishbone_0_err]
+      wb_bus_dram_if_dat_r: [dram_ctrl_inst, user_port_wishbone_0_dat_r]
+      wb_bus_dram_if_ack: [dram_ctrl_inst, user_port_wishbone_0_ack]
+      wb_bus_dram_if_err: [dram_ctrl_inst, user_port_wishbone_0_err]
 
-      wb_bus_ctrl_dat_r: [dram_ctrl_inst, wb_ctrl_dat_r]
-      wb_bus_ctrl_ack: [dram_ctrl_inst, wb_ctrl_ack]
-      wb_bus_ctrl_err: [dram_ctrl_inst, wb_ctrl_err]
+      wb_bus_ctrl_if_dat_r: [dram_ctrl_inst, wb_ctrl_dat_r]
+      wb_bus_ctrl_if_ack: [dram_ctrl_inst, wb_ctrl_ack]
+      wb_bus_ctrl_if_err: [dram_ctrl_inst, wb_ctrl_err]
 
     dram_ctrl_inst:
       clk: [lpddr4_soc_inst, sys_clk]
       rst: [lpddr4_soc_inst, sys_rst]
 
-      wb_ctrl_adr: [lpddr4_soc_inst, wb_bus_ctrl_adr]
-      wb_ctrl_dat_w: [lpddr4_soc_inst, wb_bus_ctrl_dat_w]
-      wb_ctrl_sel: [lpddr4_soc_inst, wb_bus_ctrl_sel]
-      wb_ctrl_cyc: [lpddr4_soc_inst, wb_bus_ctrl_cyc]
-      wb_ctrl_stb: [lpddr4_soc_inst, wb_bus_ctrl_stb]
-      wb_ctrl_we: [lpddr4_soc_inst, wb_bus_ctrl_we]
-      wb_ctrl_cti: [lpddr4_soc_inst, wb_bus_ctrl_cti]
-      wb_ctrl_bte: [lpddr4_soc_inst, wb_bus_ctrl_bte]
+      wb_ctrl_adr: [lpddr4_soc_inst, wb_bus_ctrl_if_adr]
+      wb_ctrl_dat_w: [lpddr4_soc_inst, wb_bus_ctrl_if_dat_w]
+      wb_ctrl_sel: [lpddr4_soc_inst, wb_bus_ctrl_if_sel]
+      wb_ctrl_cyc: [lpddr4_soc_inst, wb_bus_ctrl_if_cyc]
+      wb_ctrl_stb: [lpddr4_soc_inst, wb_bus_ctrl_if_stb]
+      wb_ctrl_we: [lpddr4_soc_inst, wb_bus_ctrl_if_we]
+      wb_ctrl_cti: [lpddr4_soc_inst, wb_bus_ctrl_if_cti]
+      wb_ctrl_bte: [lpddr4_soc_inst, wb_bus_ctrl_if_bte]
 
-      user_port_wishbone_0_adr: [lpddr4_soc_inst, wb_bus_dram_adr]
-      user_port_wishbone_0_dat_w: [lpddr4_soc_inst, wb_bus_dram_dat_w]
-      user_port_wishbone_0_sel: [lpddr4_soc_inst, wb_bus_dram_sel]
-      user_port_wishbone_0_cyc: [lpddr4_soc_inst, wb_bus_dram_cyc]
-      user_port_wishbone_0_stb: [lpddr4_soc_inst, wb_bus_dram_stb]
-      user_port_wishbone_0_we: [lpddr4_soc_inst, wb_bus_dram_we]
+      user_port_wishbone_0_adr: [lpddr4_soc_inst, wb_bus_dram_if_adr]
+      user_port_wishbone_0_dat_w: [lpddr4_soc_inst, wb_bus_dram_if_dat_w]
+      user_port_wishbone_0_sel: [lpddr4_soc_inst, wb_bus_dram_if_sel]
+      user_port_wishbone_0_cyc: [lpddr4_soc_inst, wb_bus_dram_if_cyc]
+      user_port_wishbone_0_stb: [lpddr4_soc_inst, wb_bus_dram_if_stb]
+      user_port_wishbone_0_we: [lpddr4_soc_inst, wb_bus_dram_if_we]
 
       dfi_init_complete: [phy_core_inst, dfi_init_complete]
 
@@ -81,8 +88,7 @@ design:
 
     phy_core_inst:
       clk: clk100
-      rst: usr_btn0
-      serial_rx: serial1_rx
+      rst: user_btn0
 
       ddram_dq: lpddr4_dq
       ddram_dqs_p: lpddr4_dqs_p
@@ -93,6 +99,8 @@ design:
       ddram_cke: lpddr4_cke
       ddram_odt: lpddr4_odt
       ddram_reset_n: lpddr4_reset_n
+      ddram_cs: lpddr4_cs
+      ddram_ca: lpddr4_ca
 
       dfi_init_start: [dram_ctrl_inst, dfi_init_start]
 
@@ -228,16 +236,20 @@ external:
   ports:
     in:
       - clk100
-      - usr_btn0
+      - user_btn0
+      - serial0_rx
       - serial1_rx
       - lpddr4_dq
       - lpddr4_dqs_p
       - lpddr4_dqs_n
       - lpddr4_dmi
     out:
+      - serial0_tx
       - serial1_tx
       - lpddr4_clk_p
       - lpddr4_clk_n
       - lpddr4_cke
       - lpddr4_odt
       - lpddr4_reset_n
+      - lpddr4_cs
+      - lpddr4_ca

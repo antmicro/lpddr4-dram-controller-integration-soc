@@ -7,9 +7,15 @@ PYTHONPATH += $(THIRD_PARTY_DIR)/linux-test-chip-soc-generator
 VIVADO_VER   ?= 2020.2
 VIVADO       ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
 
+PART          = xc7k70tfbg484-1
 BITSTREAM     = $(BUILD_DIR)/top.bit
 GENERATED_RTL = $(BUILD_DIR)/dram_phy/gateware/dram_phy.v \
-    $(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v
+    $(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v \
+	$(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v
+
+TOPWRAP_GEN = $(BUILD_DIR)/topwrap/gen_dram_ctrl.yaml \
+	$(BUILD_DIR)/topwrap/gen_dram_phy.yaml \
+	$(BUILD_DIR)/topwrap/gen_top.yaml
 
 PYTHON = PYTHONPATH=$(PYTHONPATH) $(shell which python3)
 
@@ -38,21 +44,18 @@ $(BUILD_DIR)/dram_phy/gateware/dram_phy.v: | $(BUILD_DIR)
 $(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v: | $(BUILD_DIR)/lpddr4_soc
 	$(PYTHON) ./src/generate_lpddr4_soc.py --headers --build-dir $(BUILD_DIR)/lpddr4_soc
 
-$(BUILD_DIR)/antmicro_lpddr4_test_board/gateware/antmicro_lpddr4_test_board.v: | $(BUILD_DIR)
-	$(PYTHON) ./src/demosoc.py
-
-soc: $(GENERATED_RTL) $(BUILD_DIR)/antmicro_lpddr4_test_board/gateware/antmicro_lpddr4_test_board.v
-
 $(BUILD_DIR)/topwrap:
 	mkdir -p $@
 
-topwrap-soc: $(GENERATED_RTL) $(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v | $(BUILD_DIR)/topwrap
+soc: $(GENERATED_RTL) | $(BUILD_DIR)/topwrap
 	cd $(BUILD_DIR)/topwrap && fpga_topwrap parse $?
-	fpga_topwrap build --design topwrap/project.yml
+	fpga_topwrap build --design topwrap/project.yml --part $(PART)
+
+$(TOPWRAP_GEN): soc
 
 $(BITSTREAM): SHELL:=/bin/bash
 $(BITSTREAM): | $(BUILD_DIR)
-$(BITSTREAM): $(GENERATED_RTL)
+$(BITSTREAM): $(GENERATED_RTL) $(TOPWRAP_GEN)
 	source $(VIVADO)/settings64.sh && vivado -mode batch -source ./build.tcl
 
 bitstream: $(BITSTREAM)
