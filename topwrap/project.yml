@@ -9,14 +9,20 @@ ips:
     file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_dram_phy.yaml
     module: dram_phy
   lpddr4_soc_inst:
-    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_top.yaml
-    module: top
+    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_lpddr4_soc.yaml
+    module: lpddr4_soc
 
 design:
   ports:
     lpddr4_soc_inst:
       clk: clk100
       sys_rst: user_btn0
+
+      user_led0: user_led0
+      user_led1: user_led1
+      user_led2: user_led2
+      user_led3: user_led3
+      user_led4: user_led4
 
       serial0_rx: serial0_rx
       serial0_tx: serial0_tx
@@ -244,6 +250,11 @@ external:
       - lpddr4_dqs_n
       - lpddr4_dmi
     out:
+      - user_led0
+      - user_led1
+      - user_led2
+      - user_led3
+      - user_led4
       - serial0_tx
       - serial1_tx
       - lpddr4_clk_p

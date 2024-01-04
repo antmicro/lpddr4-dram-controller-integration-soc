@@ -13,7 +13,7 @@ read_verilog "build/project_top.v"
 read_xdc "lpddr4-test-board.xdc"
 
 # synth
-synth_design -top "project_top" -part "xc7k70tfbg484-1"
+synth_design -top "project_top" -part "xc7k70tfbg484-3"
 
 # place and route
 opt_design
@@ -21,4 +21,6 @@ place_design
 route_design
 
 # write bitstream
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
 write_bitstream -force "build/top.bit"
+write_cfgmem -force -format bin -interface spix4 -size 16 -loadbit "up 0x0 build/top.bit" -file "build/top.bin"

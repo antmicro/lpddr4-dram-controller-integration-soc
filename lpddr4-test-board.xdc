@@ -192,24 +192,24 @@ set_property SLEW FAST [get_ports {lpddr4_dmi[1]}]
 set_property IOSTANDARD SSTL12_T_DCI [get_ports {lpddr4_dmi[1]}]
 
 # user_led:0
-# set_property LOC F8 [get_ports {user_led0}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_led0}]
+set_property LOC F8 [get_ports {user_led0}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_led0}]
 
 # user_led:1
-# set_property LOC C8 [get_ports {user_led1}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_led1}]
+set_property LOC C8 [get_ports {user_led1}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_led1}]
 
 # user_led:2
-# set_property LOC A8 [get_ports {user_led2}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_led2}]
+set_property LOC A8 [get_ports {user_led2}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_led2}]
 
 # user_led:3
-# set_property LOC D9 [get_ports {user_led3}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_led3}]
+set_property LOC D9 [get_ports {user_led3}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_led3}]
 
 # user_led:4
-# set_property LOC F9 [get_ports {user_led4}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_led4}]
+set_property LOC F9 [get_ports {user_led4}]
+set_property IOSTANDARD LVCMOS33 [get_ports {user_led4}]
 
 # user_btn:0
 set_property LOC E8 [get_ports {user_btn0}]
