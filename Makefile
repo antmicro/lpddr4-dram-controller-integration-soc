@@ -30,7 +30,7 @@ all: soc bitstream
 
 deps:
 	make -C $(SOC_GEN_DIR) $@
-	for D in `find ./third_party/ -type d`; do \
+	for D in `find ./third_party/ -type d | sort -r`; do \
 		if [ -f $$D/setup.py ]; then \
 			pip install -e $$D; \
 		fi; \
