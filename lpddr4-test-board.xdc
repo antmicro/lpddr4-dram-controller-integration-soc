@@ -21,6 +21,14 @@ set_property IOSTANDARD LVCMOS33 [get_ports {serial1_tx}]
 set_property LOC AB20 [get_ports {serial1_rx}]
 set_property IOSTANDARD LVCMOS33 [get_ports {serial1_rx}]
 
+# serial:2.tx
+set_property LOC W20 [get_ports {serial2_tx}]
+set_property IOSTANDARD LVCMOS33 [get_ports {serial2_tx}]
+
+# serial:2.rx
+set_property LOC W22 [get_ports {serial2_rx}]
+set_property IOSTANDARD LVCMOS33 [get_ports {serial2_rx}]
+
 # lpddr4:0.clk_p
 set_property LOC Y3 [get_ports {lpddr4_clk_p}]
 set_property SLEW FAST [get_ports {lpddr4_clk_p}]

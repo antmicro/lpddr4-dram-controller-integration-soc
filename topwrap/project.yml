@@ -40,7 +40,7 @@ design:
 
     dram_ctrl_inst:
       clk: [lpddr4_soc_inst, sys_clk]
-      rst: [lpddr4_soc_inst, sys_rst]
+      rst: user_btn0
 
       wb_ctrl_adr: [lpddr4_soc_inst, wb_bus_ctrl_if_adr]
       wb_ctrl_dat_w: [lpddr4_soc_inst, wb_bus_ctrl_if_dat_w]
@@ -95,6 +95,9 @@ design:
     phy_core_inst:
       clk: clk100
       rst: user_btn0
+
+      serial_rx: serial2_rx
+      serial_tx: serial2_tx
 
       ddram_dq: lpddr4_dq
       ddram_dqs_p: lpddr4_dqs_p
@@ -245,6 +248,7 @@ external:
       - user_btn0
       - serial0_rx
       - serial1_rx
+      - serial2_rx
       - lpddr4_dq
       - lpddr4_dqs_p
       - lpddr4_dqs_n
@@ -257,6 +261,7 @@ external:
       - user_led4
       - serial0_tx
       - serial1_tx
+      - serial2_tx
       - lpddr4_clk_p
       - lpddr4_clk_n
       - lpddr4_cke

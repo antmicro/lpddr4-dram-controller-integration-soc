@@ -72,7 +72,7 @@ $(BITSTREAM): $(TOPWRAP_GEN)
 
 bitstream: $(BITSTREAM)
 
-load: #$(BITSTREAM)
+load: $(BITSTREAM)
 	openocd -f ./prog/openocd_xc7_ft4232.cfg -c "init; pld load 0 $(BITSTREAM); exit"
 
 clean:
