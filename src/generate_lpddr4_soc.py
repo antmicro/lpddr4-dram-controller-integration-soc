@@ -5,8 +5,6 @@ from soc_generator.scripts.generate_soc import SoC
 from litex_boards.platforms.antmicro_lpddr4_test_board import Platform
 from litex_boards.targets import antmicro_lpddr4_test_board
 
-from soc_generator.gen.amaranth_wrapper import Amaranth2Migen
-from soc_generator.gen.wishbone_interconnect import WishboneRRInterconnect
 from litex.soc.cores.uart import UARTBone, UARTPHY
 from litex.soc.integration.builder import *
 from litex.soc.integration.soc import SoCRegion
@@ -29,9 +27,8 @@ class LPDDR4IntegrationSoC(SoC):
         led3 = Signal(name="user_led3")
         led4 = Signal(name="user_led4")
         leds = led0, led1, led2, led3, led4
-        led_pads = Cat(leds)
         self.ios.update((leds))
-        self.leds = LedChaser(pads=led_pads, sys_clk_freq=sys_clk_freq)
+        self.leds = LedChaser(pads=Cat(leds), sys_clk_freq=sys_clk_freq)
         self.submodules += self.leds
 
         self.uartbone_pads = self.platform.request("serial", 0)
@@ -41,12 +38,12 @@ class LPDDR4IntegrationSoC(SoC):
         self.submodules.uartbone = UARTBone(phy=self.uartbone_phy, clk_freq=sys_clk_freq)
         self.masters["uartbone"] = self.uartbone.wishbone
 
-        wb_bus_dram_if = wishbone.Interface()
-        wb_bus_dram_region = SoCRegion(origin=0x40000000, size=((512 * 1024 * 1024)>>1))
+        wb_bus_dram_if = wishbone.Interface(adr_width=32)
+        wb_bus_dram_region = SoCRegion(origin=0x40000000, size=0x20000000, mode="rw", cached=True)
         self.slaves["wb_bus_dram"] = (wb_bus_dram_if, wb_bus_dram_region)
 
-        wb_bus_ctrl_if = wishbone.Interface()
-        wb_bus_ctrl_region = SoCRegion(origin=0x83000000, size=0x00010000)
+        wb_bus_ctrl_if = wishbone.Interface(adr_width=32)
+        wb_bus_ctrl_region = SoCRegion(origin=0x83000000, size=0x00010000, mode="rw", cached=False)
         self.slaves["wb_bus_ctrl"] = (wb_bus_ctrl_if, wb_bus_ctrl_region)
 
         self.create_interconnect(self.masters, self.slaves)
