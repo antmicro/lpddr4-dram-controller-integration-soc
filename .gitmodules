@@ -28,3 +28,6 @@
 [submodule "third_party/linux-test-chip-soc-generator"]
 	path = third_party/linux-test-chip-soc-generator
 	url = ../linux-test-chip-soc-generator.git
+[submodule "third_party/tristan-amaranth-soc"]
+	path = third_party/tristan-amaranth-soc
+	url = ../amaranth-soc.git
