@@ -15,9 +15,10 @@ int main(int argc, char **argv) {
 	uart_stdio_init();
 	printf("Hello world!\n");
 
-	// for (int addr = BASE_RAM; addr < (BASE_RAM + 0x100); addr += 4) {
-	// 	printf("Value at address %d: %d\n", addr, *(uint32_t*)addr);
-	// }
+	for (uint32_t addr = BASE_RAM; addr < (BASE_RAM + 0x100); addr += 4) {
+		printf("Value at address 0x%x", addr);
+		printf(": 0x%x\n", *(uint32_t*)addr);
+	}
 
 	printf("Waiting for DRAM training...\n");
 	while (!dram_ctrl_controller_phy_sts_init_done_read()) {}
@@ -38,7 +39,7 @@ int main(int argc, char **argv) {
 	getchar();
 
 	for (uint32_t addr = BASE_RAM; addr < (BASE_RAM + 0x100); addr += 4) {
-		printf("Value at address %d: %d\n", addr, *(uint32_t*)addr);
+		printf("Value at address 0x%x: 0x%x\n", addr, *(uint32_t*)addr);
 	}
 
 	for (uint32_t addr = BASE_RAM; addr < (BASE_RAM + 0x100); addr += 4) {
@@ -46,7 +47,7 @@ int main(int argc, char **argv) {
 	}
 
 	for (uint32_t addr = BASE_RAM; addr < (BASE_RAM + 0x100); addr += 4) {
-		printf("Value at address %d: %d\n", addr, *(uint32_t*)addr);
+		printf("Value at address 0x%x: 0x%x\n", addr, *(uint32_t*)addr);
 	}
 
 	return 0;
