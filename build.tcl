@@ -6,7 +6,7 @@ read_verilog "build/lpddr4_soc/lpddr4_soc.v"
 read_verilog "build/phy_core_inst.v"
 read_verilog "build/dram_ctrl_inst.v"
 read_verilog "build/lpddr4_soc_inst.v"
-read_verilog "third_party/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv/verilog/VexRiscv_Min.v"
+read_verilog "third_party/pythondata-cpu-vexriscv/pythondata_cpu_vexriscv/verilog/VexRiscv_Full.v"
 read_verilog "build/project_top.v"
 
 # Add constraints
