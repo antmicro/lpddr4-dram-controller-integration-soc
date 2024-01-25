@@ -10,3 +10,7 @@ __ram_size = 4K;
 __stack_size = 1K;
 
 INCLUDE picolibc.ld
+
+MEMORY {
+    dram (w!rx) : ORIGIN = 0x40000000, LENGTH = 0x20000000
+}
