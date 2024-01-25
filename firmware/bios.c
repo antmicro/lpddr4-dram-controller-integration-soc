@@ -69,11 +69,21 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	printf("%d memory mismatches detected.\n", mismatch_counter);
-	printf("Test finished.\n");
+	printf("Test finished, %d memory mismatches detected.\n", mismatch_counter);
+	printf("===========================\n");
+	if (mismatch_counter) {
+		printf("\tTEST FAILED!\n");
+	} else {
+		printf("\tTEST PASSED!\n");
+	}
+	printf("===========================\n");
 
+	printf("Available memory access commands:\n");
+	printf("read - 'r <address> <number_of_words_to_read>'\n");
+	printf("write - 'w <address> <value_of_word_to_write>'\n");
+	printf("All values should be passed in hexadecimal format without '0x' prefix.\n\n");
 	while (1) {
-		printf("Enter command:\n");
+		printf("Enter command: ");
 		scanf("%c %lx %lx", &op, &addr, &value); printf("%c 0x%lx 0x%lx\n", op, addr, value);
 		getchar();
 		if (op == 'w') {
