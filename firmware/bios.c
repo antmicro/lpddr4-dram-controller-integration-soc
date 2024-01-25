@@ -9,6 +9,7 @@
 #define TEST_BASE 0x40000000
 #define TEST_SIZE 0x100000
 #define TEST_WORD 0xdeadbeef
+// #define DEBUG 1
 
 int main(int argc, char **argv) {
 	uint8_t op;
@@ -29,6 +30,7 @@ int main(int argc, char **argv) {
 	dram_ctrl_controller_tRRD_write(2);
 	dram_ctrl_controller_tRC_write(5);
 	dram_ctrl_controller_tRAS_write(3);
+
 	ddrphy_rdphase_write(6);
 	ddrphy_wrphase_write(6);
 	ddrphy_rst_write(1);
@@ -69,6 +71,23 @@ int main(int argc, char **argv) {
 
 	printf("%d memory mismatches detected.\n", mismatch_counter);
 	printf("Test finished.\n");
+
+	while (1) {
+		printf("Enter command:\n");
+		scanf("%c %lx %lx", &op, &addr, &value); printf("%c 0x%lx 0x%lx\n", op, addr, value);
+		getchar();
+		if (op == 'w') {
+			*(uint32_t*)addr = value;
+			printf("Writing 0x%x at address 0x%x\n", value, addr);
+		} else if (op == 'r') {
+			for (int i = 0; i < value; i++) {
+				printf("Value at address 0x%x: 0x%x\n", (addr + (i * 4)), *(uint32_t*)(addr + (i * 4)));
+			}
+		} else {
+			printf("Unrecognized command %c\n", op);
+		}
+	}
+
 
 	return 0;
 }
