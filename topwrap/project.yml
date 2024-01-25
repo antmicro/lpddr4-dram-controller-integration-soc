@@ -15,8 +15,8 @@ ips:
 design:
   ports:
     lpddr4_soc_inst:
-      clk: clk100
-      sys_rst: user_btn0
+      sys_clk: [phy_core_inst, clk_sys]
+      sys_rst: [phy_core_inst, rst_sys]
 
       user_led0: user_led0
       user_led1: user_led1
@@ -40,7 +40,7 @@ design:
 
     dram_ctrl_inst:
       clk: [lpddr4_soc_inst, sys_clk]
-      rst: user_btn0
+      rst: [phy_core_inst, rst_sys]
 
       wb_ctrl_adr: [lpddr4_soc_inst, wb_bus_ctrl_if_adr]
       wb_ctrl_dat_w: [lpddr4_soc_inst, wb_bus_ctrl_if_dat_w]

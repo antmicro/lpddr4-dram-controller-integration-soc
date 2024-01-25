@@ -17,9 +17,10 @@ class LPDDR4IntegrationSoC(SoC):
     def __init__(self, platform, sim, build_dir):
         sys_clk_freq = 50e6
         uart_type = "uart"
+        self.clock_domains.cd_sys = ClockDomain()
 
-        sys_rst = Signal(name="sys_rst")
-        super().__init__(platform, sim, uart_type, build_dir)
+        super().__init__(platform, sim, uart_type, build_dir, with_crg=False)
+        self.ios.update([self.cd_sys.clk, self.cd_sys.rst])
 
         led0 = Signal(name="user_led0")
         led1 = Signal(name="user_led1")
@@ -38,20 +39,16 @@ class LPDDR4IntegrationSoC(SoC):
         self.submodules.uartbone = UARTBone(phy=self.uartbone_phy, clk_freq=sys_clk_freq)
         self.masters["uartbone"] = self.uartbone.wishbone
 
-        wb_bus_dram_if = wishbone.Interface(adr_width=32)
+        wb_bus_dram_if = wishbone.Interface()
         wb_bus_dram_region = SoCRegion(origin=0x40000000, size=0x20000000, mode="rw", cached=True)
         self.slaves["wb_bus_dram"] = (wb_bus_dram_if, wb_bus_dram_region)
 
-        wb_bus_ctrl_if = wishbone.Interface(adr_width=32)
+        wb_bus_ctrl_if = wishbone.Interface()
         wb_bus_ctrl_region = SoCRegion(origin=0x83000000, size=0x00010000, mode="rw", cached=False)
         self.slaves["wb_bus_ctrl"] = (wb_bus_ctrl_if, wb_bus_ctrl_region)
 
         self.create_interconnect(self.masters, self.slaves)
 
-        self.crg.pll.clkin = Signal(name="clk")
-
-        self.comb += self.crg.pll.reset.eq(~sys_rst)
-        self.ios.update([self.crg.pll.clkin, self.crg.cd_sys.clk, sys_rst])
         self.ios.update(wb_bus_dram_if.flatten())
         self.ios.update(wb_bus_ctrl_if.flatten())
 
