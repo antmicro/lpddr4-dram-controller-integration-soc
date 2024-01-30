@@ -8,6 +8,8 @@ PREFIX = riscv64-unknown-elf
 CC = $(PREFIX)-gcc
 OBJCOPY = $(PREFIX)-objcopy
 
+
+VIVADO       = $(dir $(shell which vivado))/..
 VIVADO_VER   ?= 2020.2
 VIVADO       ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
 
@@ -23,18 +25,23 @@ TOPWRAP_GEN = $(BUILD_DIR)/topwrap/gen_dram_ctrl.yaml \
 
 PYTHON = PYTHONPATH=$(PYTHONPATH) $(shell which python3)
 
+
+PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
+export PATH
+
+all: bitstream
+
 include $(FIRMWARE_DIR)/headers.mk
 include $(FIRMWARE_DIR)/bios.mk
 
-all: soc bitstream
+third_party/riscv64-unknown-elf-gcc:
+	@echo Downloading RISC-V toolchain
+	curl -L https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14.tar.gz | tar -xzf -
+	mv riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14 third_party/riscv64-unknown-elf-gcc
 
-deps:
+deps: third_party/riscv64-unknown-elf-gcc
+	pip install -r requirements.txt
 	make -C $(SOC_GEN_DIR) $@
-	for D in `find ./third_party/ -type d | sort -r`; do \
-		if [ -f $$D/setup.py ]; then \
-			pip install -e $$D; \
-		fi; \
-	done
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -64,8 +71,8 @@ $(TOPWRAP_GEN): $(GENERATED_RTL)
 	$(MAKE) soc
 
 $(BITSTREAM): SHELL:=/bin/bash
-$(BITSTREAM): | $(BUILD_DIR)
 $(BITSTREAM): $(TOPWRAP_GEN)
+$(BITSTREAM): | $(BUILD_DIR)
 	$(MAKE) $(BUILD_DIR)/bios.init
 	cp $(BUILD_DIR)/bios.init $(BUILD_DIR)/lpddr4_soc/bios.init
 	source $(VIVADO)/settings64.sh && vivado -mode batch -source ./build.tcl

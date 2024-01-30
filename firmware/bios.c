@@ -84,7 +84,8 @@ int main(int argc, char **argv) {
 	printf("All values should be passed in hexadecimal format without '0x' prefix.\n\n");
 	while (1) {
 		printf("Enter command: ");
-		scanf("%c %lx %lx", &op, &addr, &value); printf("%c 0x%lx 0x%lx\n", op, addr, value);
+		scanf("%c %lx %lx", &op, &addr, &value);
+		printf("Parsed command:%c 0x%lx 0x%lx\n", op, addr, value);
 		getchar();
 		if (op == 'w') {
 			*(uint32_t*)addr = value;

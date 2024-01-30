@@ -31,3 +31,13 @@
 [submodule "third_party/tristan-amaranth-soc"]
 	path = third_party/tristan-amaranth-soc
 	url = ../amaranth-soc.git
+[submodule "third_party/liteeth"]
+	path = third_party/liteeth
+	url = https://github.com/antmicro/liteeth.git
+	branch = rowhammer-tester
+[submodule "third_party/fpga_topwrap"]
+	path = third_party/fpga_topwrap
+	url = https://github.com/antmicro/topwrap.git
+[submodule "third_party/liteiclink"]
+	path = third_party/liteiclink
+	url = https://github.com/enjoy-digital/liteiclink

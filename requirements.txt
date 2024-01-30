@@ -1,0 +1,15 @@
+-e third_party/migen
+-e third_party/litex
+-e third_party/litedram
+-e third_party/liteeth
+-e third_party/liteiclink
+-e third_party/litex-boards
+# vexriscv cpu
+-e third_party/pythondata-cpu-vexriscv
+# software data
+-e third_party/pythondata-software-compiler_rt
+-e third_party/pythondata-software-picolibc
+# topwrap
+-e third_party/tristan-amaranth-soc
+-e third_party/linux-test-chip-soc-generator
+-e third_party/fpga_topwrap

@@ -21,7 +21,9 @@ int uart_putc(char c, FILE *file) {
 
 int uart_getc(FILE *file) {
 	(void)file;
-	return uart_read();
+	char t = uart_read();
+	uart_write(t);
+	return t;
 }
 
 void uart_stdio_init() {

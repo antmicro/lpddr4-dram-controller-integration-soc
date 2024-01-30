@@ -43,6 +43,7 @@ report_drc -file lpddr4_soc_drc.rpt
 report_timing_summary -datasheet -max_paths 10 -file lpddr4_soc_timing.rpt
 report_power -file lpddr4_soc_power.rpt
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+write_checkpoint -force "build/imp.dcp"
 
 # Bitstream generation
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]

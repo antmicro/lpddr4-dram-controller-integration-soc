@@ -3,13 +3,13 @@
 
 ips:
   dram_ctrl_inst:
-    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_dram_ctrl.yaml
+    file: build/topwrap/gen_dram_ctrl.yaml
     module: dram_ctrl
   phy_core_inst:
-    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_dram_phy.yaml
+    file: build/topwrap/gen_dram_phy.yaml
     module: dram_phy
   lpddr4_soc_inst:
-    file: /hdd/Tristan/tristan-lpddr4-integration/build/topwrap/gen_lpddr4_soc.yaml
+    file: build/topwrap/gen_lpddr4_soc.yaml
     module: lpddr4_soc
 
 design:
