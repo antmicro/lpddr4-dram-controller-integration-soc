@@ -8,12 +8,44 @@
 
 #define TEST_BASE 0x40000000
 #define TEST_SIZE 0x100000
-#define TEST_WORD 0xdeadbeef
+#define MAX_INPUT_LEN 30
 // #define DEBUG 1
 
+uint32_t lfsr(uint32_t prev)
+{
+    uint32_t lsb = prev & 1;
+
+    prev >>= 1;
+    prev ^= (-lsb) & 0x80200003;
+
+    return prev;
+}
+
+uint32_t nb_of_params(char *input, uint32_t len) {
+	uint32_t nb_of_separators = 0;
+
+	for (uint32_t i = 0; i < len; i++) {
+		if (*(input + i) == ' ') {
+			nb_of_separators++;
+		}
+	}
+
+	return nb_of_separators;
+}
+
+void print_cmd_help() {
+	printf("Available memory access commands:\n");
+	printf("write - 'w <address> <value> <count>'\n");
+	printf("read - 'r <address> <count>'\n");
+	printf("<address> and <value> should be passed in hexadecimal format without '0x' prefix.\n\n");
+}
+
 int main(int argc, char **argv) {
-	uint8_t op;
-	uint32_t addr, value;
+	uint32_t addr, value, count, i;
+	uint32_t mismatch_counter = 0;
+	uint32_t seed = 1;
+	char input[MAX_INPUT_LEN] = { 0 };
+	char op, c;
 
 	uart_stdio_init();
 
@@ -53,18 +85,23 @@ int main(int argc, char **argv) {
 		}
 	#endif
 
-	printf("Overwriting 0x%x-0x%x with 0x%x...\n", TEST_BASE, (TEST_BASE + TEST_SIZE), TEST_WORD);
+	printf("Writing to 0x%x-0x%x...\n", TEST_BASE, (TEST_BASE + TEST_SIZE));
 	for (uint32_t addr = TEST_BASE; addr < (TEST_BASE + TEST_SIZE); addr += 4) {
-		*(uint32_t*)addr = TEST_WORD;
+		seed = lfsr(seed);
+		#ifdef DEBUG
+			printf("Writing 0x%x at 0x%x\n", seed, addr);
+		#endif
+		*(uint32_t*)addr = seed;
 	}
 
+	seed = 1;
 	printf("Reading 0x%x-0x%x...\n", TEST_BASE, (TEST_BASE + TEST_SIZE));
-	uint32_t mismatch_counter = 0;
 	for (uint32_t addr = TEST_BASE; addr < (TEST_BASE + TEST_SIZE); addr += 4) {
-		if (*(uint32_t*)addr != TEST_WORD) {
+		seed = lfsr(seed);
+		if (*(uint32_t*)addr != seed) {
 			mismatch_counter++;
 			#ifdef DEBUG
-				printf("Data mismatch at 0x%x (0x%x vs 0x%x)\n", addr, *(uint32_t*)addr, TEST_WORD);
+				printf("Data mismatch at 0x%x (0x%x vs 0x%x)\n", addr, *(uint32_t*)addr, seed);
 			#endif
 		}
 	}
@@ -78,27 +115,54 @@ int main(int argc, char **argv) {
 	}
 	printf("===========================\n");
 
-	printf("Available memory access commands:\n");
-	printf("read - 'r <address> <number_of_words_to_read>'\n");
-	printf("write - 'w <address> <value_of_word_to_write>'\n");
-	printf("All values should be passed in hexadecimal format without '0x' prefix.\n\n");
+	print_cmd_help();
+
 	while (1) {
-		printf("Enter command: ");
-		scanf("%c %lx %lx", &op, &addr, &value);
-		printf("Parsed command:%c 0x%lx 0x%lx\n", op, addr, value);
-		getchar();
+		printf(">");
+
+		c = uart_getc(stdin);
+		i = 0;
+		while ((c != '\n') && (c != '\r') && (i < (MAX_INPUT_LEN - 1))) {
+			input[i] = c;
+			c = uart_getc(stdin);
+			i++;
+		};
+		input[i] = '\0';
+		printf(">%s\n", input);
+
+		if (input[1] != ' ') {
+			printf("Incorrect input format.\n");
+			continue;
+		}
+
+		op = input[0];
+
 		if (op == 'w') {
-			*(uint32_t*)addr = value;
-			printf("Writing 0x%x at address 0x%x\n", value, addr);
+			if ((nb_of_params(input, i) != 3) || (sscanf(input, "%*s %lx %lx %d", &addr, &value, &count) != 3)) {
+				printf("Incorrect input for write command.\n");
+				print_cmd_help();
+				continue;
+			}
+
+			for (uint32_t i = 0; i < (count * 4); i += 4) {
+				*(uint32_t*)(addr + i) = value;
+			}
 		} else if (op == 'r') {
-			for (int i = 0; i < value; i++) {
+			if ((nb_of_params(input, i) != 2) || (sscanf(input, "%*s %lx %d", &addr, &count) != 2)) {
+				printf("Incorrect input for read command.\n");
+				print_cmd_help();
+				continue;
+			}
+
+			for (int i = 0; i < count; i++) {
 				printf("Value at address 0x%x: 0x%x\n", (addr + (i * 4)), *(uint32_t*)(addr + (i * 4)));
 			}
 		} else {
 			printf("Unrecognized command %c\n", op);
+			print_cmd_help();
 		}
+		printf("\n");
 	}
-
 
 	return 0;
 }
