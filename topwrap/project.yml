@@ -24,9 +24,6 @@ design:
       user_led3: user_led3
       user_led4: user_led4
 
-      serial0_rx: serial0_rx
-      serial0_tx: serial0_tx
-
       serial1_rx: serial1_rx
       serial1_tx: serial1_tx
 
@@ -246,7 +243,6 @@ external:
     in:
       - clk100
       - user_btn0
-      - serial0_rx
       - serial1_rx
       - serial2_rx
       - lpddr4_dq
@@ -259,7 +255,6 @@ external:
       - user_led2
       - user_led3
       - user_led4
-      - serial0_tx
       - serial1_tx
       - serial2_tx
       - lpddr4_clk_p

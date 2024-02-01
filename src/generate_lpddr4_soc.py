@@ -1,56 +1,171 @@
 import argparse
 import os
 
-from soc_generator.scripts.generate_soc import SoC
 from litex_boards.platforms.antmicro_lpddr4_test_board import Platform
-from litex_boards.targets import antmicro_lpddr4_test_board
 
-from litex.soc.cores.uart import UARTBone, UARTPHY
+import litex.soc.integration.export as export
+import litex.soc.interconnect.csr_bus as csr_bus
+from litex.soc.cores.uart import UART, UARTPHY
 from litex.soc.integration.builder import *
-from litex.soc.integration.soc import SoCRegion
+from litex.soc.integration.soc import SoCCSRRegion, SoCRegion
 from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
+from litex.soc.cores.cpu.vexriscv import VexRiscv
+from litex.soc.cores import timer
 from migen import *
 
+from soc_generator.gen.amaranth_wrapper import Amaranth2Migen
+from soc_generator.gen.wishbone_interconnect import WishboneRRInterconnect
 
-class LPDDR4IntegrationSoC(SoC):
-    def __init__(self, platform, sim, build_dir):
+class LPDDR4IntegrationSoC(Module):
+    def __init__(self, platform, build_dir):
         sys_clk_freq = 50e6
-        uart_type = "uart"
+
         self.clock_domains.cd_sys = ClockDomain()
 
-        super().__init__(platform, sim, uart_type, build_dir, with_crg=False)
-        self.ios.update([self.cd_sys.clk, self.cd_sys.rst])
+        self.slaves = {}
+        self.masters = {}
+        self.mem_regions = {}
+        self.csr_addr_map = {
+            "uart": 0x0,
+            "timer0": 0x1,
+        }
+        self.csr_paging = 0x200
 
+        self.platform = platform
+        self.build_dir = build_dir
+
+        # CPU
+        self.submodules.core = VexRiscv(platform, variant="linux")
+        self.core.set_reset_address(self.core.mem_map["rom"])
+        self.submodules.timer0 = timer.Timer()
+
+        self.masters["cpu_ibus"] = self.core.ibus
+        self.masters["cpu_dbus"] = self.core.dbus
+
+        # UART
+        self.uart_pads = platform.request("serial", number=1)
+        self.submodules.uart_phy = UARTPHY(self.uart_pads, sys_clk_freq, 115200)
+        self.submodules.uart = UART(phy=self.uart_phy)
+
+        # CSR bus
+        csr_master = csr_bus.Interface()
+        self.submodules.csrs = csr_bus.CSRBankArray(
+            self, lambda name, _: self.csr_addr_map[name], paging=self.csr_paging
+        )
+        if self.csrs.get_buses():
+            self.submodules += csr_bus.Interconnect(master=csr_master, slaves=self.csrs.get_buses())
+
+        csr_wishbone = wishbone.Interface()
+        self.submodules += wishbone.Wishbone2CSR(bus_wishbone=csr_wishbone, bus_csr=csr_master)
+
+        csr_region = SoCRegion(origin=self.core.mem_map["csr"], size=0x1000)
+        self.slaves["csr"] = (csr_wishbone, csr_region)
+
+        # ROM + RAM
+        self.add_memory(self.core.mem_map["rom"], 0xA000, read_only=True, name="rom")
+        self.add_memory(self.core.mem_map["sram"], 0x1000, name="sram")
+
+        # LED chaser
         led0 = Signal(name="user_led0")
         led1 = Signal(name="user_led1")
         led2 = Signal(name="user_led2")
         led3 = Signal(name="user_led3")
         led4 = Signal(name="user_led4")
         leds = led0, led1, led2, led3, led4
-        self.ios.update((leds))
         self.leds = LedChaser(pads=Cat(leds), sys_clk_freq=sys_clk_freq)
         self.submodules += self.leds
 
-        self.uartbone_pads = self.platform.request("serial", 0)
-
-        self.submodules.uartbone_phy = UARTPHY(self.uartbone_pads, clk_freq=sys_clk_freq, baudrate=115200)
-        self.ios.update(self.uartbone_pads.flatten())
-        self.submodules.uartbone = UARTBone(phy=self.uartbone_phy, clk_freq=sys_clk_freq)
-        self.masters["uartbone"] = self.uartbone.wishbone
-
+        # Wishbone DRAM interface
         wb_bus_dram_if = wishbone.Interface()
         wb_bus_dram_region = SoCRegion(origin=0x40000000, size=0x20000000, mode="rw", cached=True)
         self.slaves["wb_bus_dram"] = (wb_bus_dram_if, wb_bus_dram_region)
 
+        # Wishbone Controller interface
         wb_bus_ctrl_if = wishbone.Interface()
         wb_bus_ctrl_region = SoCRegion(origin=0x83000000, size=0x00010000, mode="rw", cached=False)
         self.slaves["wb_bus_ctrl"] = (wb_bus_ctrl_if, wb_bus_ctrl_region)
 
+        # Wishbone interconnect
         self.create_interconnect(self.masters, self.slaves)
 
+        # I/O
+        self.ios = set()
+        self.ios.update([self.cd_sys.clk, self.cd_sys.rst])
+        self.ios.update(leds)
+        self.ios.update(self.uart_pads.flatten())
         self.ios.update(wb_bus_dram_if.flatten())
         self.ios.update(wb_bus_ctrl_if.flatten())
+
+    def create_interconnect(self, masters, slaves):
+        ic = WishboneRRInterconnect(
+            addr_width=30, data_width=32, granularity=8, features={"bte", "cti", "err"}
+        )
+
+        for name, _ in masters.items():
+            ic.add_master(name=name)
+        for name, (_, mem_region) in slaves.items():
+            ic.add_peripheral(name=name, addr=mem_region.origin, size=mem_region.size)
+
+        self.submodules.interconnect = Amaranth2Migen(
+            ic, self.platform, "wishbone_interconnect", self.build_dir
+        )
+
+        for name, master in masters.items():
+            self.comb += master.connect(self.interconnect.interfaces[name])
+
+        for name, (slave, _) in slaves.items():
+            self.comb += self.interconnect.interfaces[name].connect(slave)
+
+    def gen_csr_header(self):
+        header = ""
+        csr_regions = {}
+        for csr_group, csr_list, _, _ in self.csrs.banks:
+            offset = self.csr_addr_map[csr_group] * self.csr_paging
+            csr_regions[csr_group] = SoCCSRRegion(
+                origin=self.core.mem_map["csr"] + offset, busword=32, obj=csr_list
+            )
+        if csr_regions:
+            header += export.get_csr_header(csr_regions, {}, self.core.mem_map["csr"])
+            header += "#define UART_POLLING\n"
+        return header
+
+    def gen_soc_header(self):
+        header = ""
+        header += "#define CONFIG_CSR_DATA_WIDTH 32\n"
+        header += '#define CONFIG_CPU_NOP "nop"\n'
+        header += "#define CONFIG_CLOCK_FREQUENCY 1000000\n"
+        return header
+
+    def gen_mem_header(self):
+        header = ""
+        if self.mem_regions:
+            header += export.get_mem_header(self.mem_regions)
+        return header
+
+    def write_headers(self):
+        header_path = f"{self.build_dir}/generated"
+        to_generate = {
+            f"{header_path}/csr.h": self.gen_csr_header,
+            f"{header_path}/soc.h": self.gen_soc_header,
+            f"{header_path}/mem.h": self.gen_mem_header,
+        }
+
+        try:
+            os.makedirs(header_path)
+        except FileExistsError:
+            if not os.path.isdir(header_path):
+                raise
+
+        for path, gen_f in to_generate.items():
+            with open(path, "w") as file:
+                file.write(gen_f())
+
+    def add_memory(self, origin, size, read_only=False, init=[], name=None):
+        bus = wishbone.Interface()
+        self.submodules += wishbone.SRAM(size, bus=bus, read_only=read_only, init=init, name=name)
+        mem_region = SoCRegion(origin=origin, size=size)
+        self.slaves[name] = (bus, mem_region)
 
 
 def main():
@@ -73,17 +188,11 @@ def main():
         action="store_true",
         help="Generate verilog sources and bitstream (invokes vivado)",
     )
-    group.add_argument(
-        "--sim",
-        action="store_true",
-        help="Generate build files appropriate for use in a verilator \
-            simulation (controls behavior of other generation options)",
-    )
 
     args = parser.parse_args()
 
     platform = Platform(device="xc7k70tfbg484-3")
-    soc = LPDDR4IntegrationSoC(platform, args.sim, args.build_dir)
+    soc = LPDDR4IntegrationSoC(platform, args.build_dir)
     if args.bitstream:
         platform.build(soc, ios=soc.ios, build_dir=args.build_dir, build_name="lpddr4_soc", run=False)
     else:
