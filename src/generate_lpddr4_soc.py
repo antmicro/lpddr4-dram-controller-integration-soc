@@ -26,9 +26,16 @@ class LPDDR4IntegrationSoC(Module):
         self.slaves = {}
         self.masters = {}
         self.mem_regions = {}
+        self.mem_map = {
+            "rom":       0x0000_0000,
+            "sram":      0x1000_0000,
+            "main_ram":  0x4000_0000,
+            "dram_ctrl": 0x8300_0000,
+            "csr":       0xf000_0000,
+        }
         self.csr_addr_map = {
-            "uart": 0x0,
-            "timer0": 0x1,
+            "uart": 3,
+            "timer0": 5,
         }
         self.csr_paging = 0x200
 
@@ -37,7 +44,7 @@ class LPDDR4IntegrationSoC(Module):
 
         # CPU
         self.submodules.core = VexRiscv(platform, variant="linux")
-        self.core.set_reset_address(self.core.mem_map["rom"])
+        self.core.set_reset_address(self.mem_map["rom"])
         self.submodules.timer0 = timer.Timer()
 
         self.masters["cpu_ibus"] = self.core.ibus
@@ -59,12 +66,12 @@ class LPDDR4IntegrationSoC(Module):
         csr_wishbone = wishbone.Interface()
         self.submodules += wishbone.Wishbone2CSR(bus_wishbone=csr_wishbone, bus_csr=csr_master)
 
-        csr_region = SoCRegion(origin=self.core.mem_map["csr"], size=0x1000)
+        csr_region = SoCRegion(origin=self.mem_map["csr"], size=0x1000)
         self.slaves["csr"] = (csr_wishbone, csr_region)
 
         # ROM + RAM
-        self.add_memory(self.core.mem_map["rom"], 0xA000, read_only=True, name="rom")
-        self.add_memory(self.core.mem_map["sram"], 0x1000, name="sram")
+        self.add_memory(self.mem_map["rom"], 0xA000, read_only=True, name="rom")
+        self.add_memory(self.mem_map["sram"], 0x1000, name="sram")
 
         # LED chaser
         led0 = Signal(name="user_led0")
@@ -78,12 +85,12 @@ class LPDDR4IntegrationSoC(Module):
 
         # Wishbone DRAM interface
         wb_bus_dram_if = wishbone.Interface()
-        wb_bus_dram_region = SoCRegion(origin=0x40000000, size=0x20000000, mode="rw", cached=True)
+        wb_bus_dram_region = SoCRegion(origin=self.mem_map["main_ram"], size=0x20000000, mode="rw", cached=True)
         self.slaves["wb_bus_dram"] = (wb_bus_dram_if, wb_bus_dram_region)
 
         # Wishbone Controller interface
         wb_bus_ctrl_if = wishbone.Interface()
-        wb_bus_ctrl_region = SoCRegion(origin=0x83000000, size=0x00010000, mode="rw", cached=False)
+        wb_bus_ctrl_region = SoCRegion(origin=self.mem_map["dram_ctrl"], size=0x00010000, mode="rw", cached=False)
         self.slaves["wb_bus_ctrl"] = (wb_bus_ctrl_if, wb_bus_ctrl_region)
 
         # Wishbone interconnect
