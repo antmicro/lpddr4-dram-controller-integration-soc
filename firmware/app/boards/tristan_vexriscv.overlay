@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) 2024 Antmicro
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+    &ram0 {
+        reg = <0x40000000 0x20000000>;
+    }
+};
+
+&eth0 {
+	status = "disabled";
+};
+
+&dna0 {
+	status = "disabled";
+};
+
+&spi0 {
+	status = "disabled";
+};
+
+&prbs0 {
+	status = "disabled";
+};
+
+&i2c0 {
+	status = "disabled";
+};
+
+&pwm0 {
+	status = "disabled";
+};
+
+&gpio_out {
+	status = "disabled";
+};
+
+&gpio_in {
+	status = "disabled";
+};
+
+&i2s_rx {
+	status = "disabled";
+};
+
+&i2s_tx {
+	status = "disabled";
+};
+
+&clk0 {
+	status = "disabled";
+};
+
+&clk1 {
+	status = "disabled";
+};
+
+&clock0 {
+	status = "disabled";
+};
