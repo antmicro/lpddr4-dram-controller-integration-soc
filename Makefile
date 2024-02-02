@@ -5,10 +5,25 @@ BUILD_DIR := $(ROOT_DIR)/build
 SOC_GEN_DIR := $(THIRD_PARTY_DIR)/linux-test-chip-soc-generator
 FIRMWARE_DIR := $(ROOT_DIR)/firmware
 
-PREFIX = riscv64-unknown-elf
-CC = $(PREFIX)-gcc
-OBJCOPY = $(PREFIX)-objcopy
+RISCV_TOOLCHAIN = riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14
+RISCV_TOOLCHAIN_URL = https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/$(RISCV_TOOLCHAIN).tar.gz
 
+GCC_PREFIX = riscv64-unknown-elf
+
+# Ensure that RISC-V toolchain is installed
+ifneq ($(MAKECMDGOALS), riscv-toolchain)
+ifeq ($(shell which $(GCC_PREFIX)-gcc 2> /dev/null),)
+GCC_PREFIX = riscv32-unknown-elf
+endif
+ifeq ($(shell which $(GCC_PREFIX)-gcc 2> /dev/null),)
+$(error RISC-V toolchain not found, please run `make riscv-toolchain` to install it or install the toolchain manually)
+endif
+endif
+
+CC = $(GCC_PREFIX)-gcc
+OBJCOPY = $(GCC_PREFIX)-objcopy
+
+# Use system Vivado command if available, otherwise source settings64.sh
 VIVADO = $(shell which vivado)
 ifeq (, $(VIVADO))
 	VIVADO_VER  ?= 2020.2
@@ -32,7 +47,7 @@ PYTHON = $(shell which python3)
 NINJA = $(shell which ninja)
 MESON = $(shell which meson)
 
-PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
+PATH := $(PATH):$(PWD)/third_party/riscv64-unknown-elf-gcc/bin
 export PATH
 
 all: bitstream ## Generate verilog sources and build a bitstream
@@ -40,12 +55,12 @@ all: bitstream ## Generate verilog sources and build a bitstream
 include $(FIRMWARE_DIR)/headers.mk
 include $(FIRMWARE_DIR)/bios.mk
 
-third_party/riscv64-unknown-elf-gcc:
+riscv-toolchain: ## Install RISC-V toolchain
 	@echo Downloading RISC-V toolchain
-	curl -L https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14.tar.gz | tar -xzf -
-	mv riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14 third_party/riscv64-unknown-elf-gcc
+	curl -L $(RISCV_TOOLCHAIN_URL) | tar -xzf -
+	mv $(RISCV_TOOLCHAIN) third_party/riscv-toolchain
 
-deps: third_party/riscv64-unknown-elf-gcc ## Configure Python environment
+deps: ## Configure Python environment
 	pip install -r requirements.txt
 
 $(BUILD_DIR):
