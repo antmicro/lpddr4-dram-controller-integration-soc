@@ -12,5 +12,5 @@ meson
 -e third_party/pythondata-software-picolibc
 # topwrap
 -e third_party/tristan-amaranth-soc
--e third_party/linux-test-chip-soc-generator
+third_party/linux-test-chip-soc-generator
 -e third_party/fpga_topwrap

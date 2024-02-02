@@ -47,7 +47,6 @@ third_party/riscv64-unknown-elf-gcc:
 
 deps: third_party/riscv64-unknown-elf-gcc ## Configure Python environment
 	pip install -r requirements.txt
-	make -C $(SOC_GEN_DIR) $@
 
 $(BUILD_DIR):
 	mkdir -p $@
