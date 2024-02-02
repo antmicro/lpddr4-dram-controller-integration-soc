@@ -48,16 +48,60 @@ Load the bitstream:
 ```
 make load
 ```
-Some LEDs should light up. Refer to `rtl/top.v` for their meaning.
+User LEDs should light up and blink in a form of a LED chaser. Integration SoC will send a memory initialization request right after boot up.
 
-First UART is connected to demo SoC UART, second UART will be connected to demo SoC UARTBone.
+First UART is connected to the integration SoC UART, second UART is connected to the PHY SoC. Both of these provide memory access commands which should be described after finished memory training. The DRAM is mapped at address range 0x40000000-0x60000000 from the integration SoC. Acessing data directly from the PHY requires passing an exact location (bank, row, column) in memory.
 
-Initialize the DRAM controller.
-
-**For now this step is performed by the** `scripts/dram_init.py` **script and requires a 2nd UART to be connected to the board. The UART is available on the J14 connector (J14.4 - TX, J14.6 - RX, J14.9 - GND).**
-
+Example UART output from the integration SoC:
 ```
-./scripts/dram_init.py
+Initialize training.
+Waiting for training finish...
+DRAM training finished.
+Writing to 0x40000000-0x40100000...
+Reading 0x40000000-0x40100000...
+Test finished, 0 memory mismatches detected.
+===========================
+        TEST PASSED!
+===========================
+Available memory access commands:
+write - 'w <address> <value> <count>'
+read - 'r <address> <count>'
+<address> and <value> should be passed in hexadecimal format without '0x' prefix.
+
+>
 ```
 
-The DRAM is mapped at 0x40000000 and above. You may test its operation by issuing `mem_read` and `mem_write` commands to the SoC terminal (LiteX BIOS).
+Example UART output from the PHY SoC:
+```
+TRISTAN DRAM PHY
+Initializing DRAM...
+Initializing SDRAM @0xffffffff...
+Switching SDRAM to software control.
+Write leveling:
+  tCK equivalent taps: 32
+  Cmd/Clk scan (0-16)
+  |Cmd/Clk delay: 0
+  m0: |00000000001111111111111111000000| delay: 10
+  m1: |00000000001111111111111110000000| delay: 10
+ AMW: |00000000001111111111111110000000| total: 15
+
+// [...] Long memory training log
+
+Switching SDRAM to hardware control.
+
+Selected bitslips and delays:
+Clock delay: 7
+module:  0  1
+    wb:  0  0
+  wdly: 22 22
+    rb:  7  7
+  rdly:  9  8
+DRAM initialization complete!
+
+Available memory access commands:
+write - 'w <bank> <row> <column> <value>'
+read - 'r <bank> <row> <column>'
+<value> should be passed in hexadecimal format without '0x' prefix.
+
+>
+```
