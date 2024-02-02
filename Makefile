@@ -8,15 +8,19 @@ PREFIX = riscv64-unknown-elf
 CC = $(PREFIX)-gcc
 OBJCOPY = $(PREFIX)-objcopy
 
-
-VIVADO       = $(dir $(shell which vivado))/..
-VIVADO_VER   ?= 2020.2
-VIVADO       ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
+VIVADO = $(shell which vivado)
+ifeq (, $(VIVADO))
+	VIVADO_VER  ?= 2020.2
+	VIVADO_PATH ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
+	VIVADO_CMD  ?= source $(VIVADO_PATH)/settings64.sh && vivado
+else
+	VIVADO_CMD ?= $(VIVADO)
+endif
 
 PART          = xc7k70tfbg484-1
 BITSTREAM     = $(BUILD_DIR)/top.bit
 GENERATED_RTL = $(BUILD_DIR)/dram_phy/gateware/dram_phy.v \
-    $(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v \
+	$(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v \
 	$(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v
 
 TOPWRAP_GEN = $(BUILD_DIR)/topwrap/gen_dram_ctrl.yaml \
@@ -75,7 +79,7 @@ $(BITSTREAM): $(TOPWRAP_GEN)
 $(BITSTREAM): | $(BUILD_DIR)
 	$(MAKE) $(BUILD_DIR)/bios.init
 	cp $(BUILD_DIR)/bios.init $(BUILD_DIR)/lpddr4_soc/bios.init
-	source $(VIVADO)/settings64.sh && vivado -mode batch -source ./build.tcl
+	$(VIVADO_CMD) -mode batch -source ./build.tcl
 
 bitstream: $(BITSTREAM)
 
