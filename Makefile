@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 THIRD_PARTY_DIR := $(ROOT_DIR)/third_party
 BUILD_DIR := $(ROOT_DIR)/build
@@ -33,7 +34,7 @@ PYTHON = PYTHONPATH=$(PYTHONPATH) $(shell which python3)
 PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
 export PATH
 
-all: bitstream
+all: bitstream ## Generate verilog sources and build a bitstream
 
 include $(FIRMWARE_DIR)/headers.mk
 include $(FIRMWARE_DIR)/bios.mk
@@ -43,7 +44,7 @@ third_party/riscv64-unknown-elf-gcc:
 	curl -L https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14.tar.gz | tar -xzf -
 	mv riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14 third_party/riscv64-unknown-elf-gcc
 
-deps: third_party/riscv64-unknown-elf-gcc
+deps: third_party/riscv64-unknown-elf-gcc ## Configure Python environment
 	pip install -r requirements.txt
 	make -C $(SOC_GEN_DIR) $@
 
@@ -67,7 +68,7 @@ $(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v: | $(BUILD_DIR)/lpddr4_soc
 $(BUILD_DIR)/topwrap:
 	mkdir -p $@
 
-soc: $(GENERATED_RTL) | $(BUILD_DIR)/topwrap
+soc: $(GENERATED_RTL) | $(BUILD_DIR)/topwrap ## Generate verilog sources
 	cd $(BUILD_DIR)/topwrap && fpga_topwrap parse $?
 	fpga_topwrap build --design topwrap/project.yml --part $(PART)
 
@@ -81,13 +82,27 @@ $(BITSTREAM): | $(BUILD_DIR)
 	cp $(BUILD_DIR)/bios.init $(BUILD_DIR)/lpddr4_soc/bios.init
 	$(VIVADO_CMD) -mode batch -source ./build.tcl
 
-bitstream: $(BITSTREAM)
+bitstream: $(BITSTREAM) ## Generate verilog sources and build a bitstream
 
-load: $(BITSTREAM)
+load: $(BITSTREAM) ## Generate a bitstream and load it to the board's SRAM
 	openocd -f ./prog/openocd_xc7_ft4232.cfg -c "init; pld load 0 $(BITSTREAM); exit"
 
-clean:
-	-rm -rf $(BUILD_DIR)
-	-rm vivado*
+clean: ## Remove all generated files
+	$(RM) -r $(BUILD_DIR) .Xil
+	$(RM) vivado* usage_statistics*
 
 .PHONY: deps soc bitstream load clean
+
+.DEFAULT_GOAL := help
+HELP_COLUMN_SPAN = 15
+HELP_FORMAT_STRING = "\033[36m%-$(HELP_COLUMN_SPAN)s\033[0m %s\n"
+help: ## Show this help message
+	@echo List of available targets:
+	@grep -hE '^[^#[:blank:]]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf $(HELP_FORMAT_STRING), $$1, $$2}'
+	@echo
+	@echo
+	@echo List of available optional parameters:
+	@echo
+	@echo -e "\033[36mVIVADO_VER\033[0m  Version of Vivado to search under VIVADO_PATH (default: $(VIVADO_VER))"
+	@echo -e "\033[36mVIVADO_PATH\033[0m Path to the Vivado installation directory (default: $(VIVADO_PATH))"
+	@echo -e "\033[36mVIVADO_CMD\033[0m  Path to the Vivado binary, it overwrites previous parameters (default: $(VIVADO_CMD))"
