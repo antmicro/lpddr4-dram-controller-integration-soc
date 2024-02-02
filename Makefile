@@ -28,8 +28,9 @@ TOPWRAP_GEN = $(BUILD_DIR)/topwrap/gen_dram_ctrl.yaml \
 	$(BUILD_DIR)/topwrap/gen_dram_phy.yaml \
 	$(BUILD_DIR)/topwrap/gen_lpddr4_soc.yaml
 
-PYTHON = PYTHONPATH=$(PYTHONPATH) $(shell which python3)
-
+PYTHON = $(shell which python3)
+NINJA = $(shell which ninja)
+MESON = $(shell which meson)
 
 PATH := $(PWD)/third_party/riscv64-unknown-elf-gcc/bin:$(PATH)
 export PATH
