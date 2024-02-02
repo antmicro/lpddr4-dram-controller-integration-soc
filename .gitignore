@@ -1,3 +1,5 @@
 build/
 .Xil/
 vivado*
+*.html
+*.xml
