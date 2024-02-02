@@ -144,6 +144,11 @@ int main(int argc, char **argv) {
 				continue;
 			}
 
+			if ((addr < 0x40000000) && (addr >= 0x60000000)) {
+				printf("Trying to access memory out of bounds 0x40000000-0x60000000.\n");
+				continue;
+			}
+
 			for (uint32_t i = 0; i < (count * 4); i += 4) {
 				*(uint32_t*)(addr + i) = value;
 			}
@@ -151,6 +156,11 @@ int main(int argc, char **argv) {
 			if ((nb_of_params(input, i) != 2) || (sscanf(input, "%*s %lx %d", &addr, &count) != 2)) {
 				printf("Incorrect input for read command.\n");
 				print_cmd_help();
+				continue;
+			}
+
+			if ((addr < 0x40000000) && (addr >= 0x60000000)) {
+				printf("Trying to access memory out of bounds 0x40000000-0x60000000.\n");
 				continue;
 			}
 
