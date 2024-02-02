@@ -16,9 +16,9 @@ read_xdc "lpddr4-test-board.xdc"
 synth_design -top "project_top" -part "xc7k70tfbg484-3"
 
 # Synthesis report
-report_timing_summary -file lpddr4_soc_timing_synth.rpt
-report_utilization -hierarchical -file lpddr4_soc_utilization_hierarchical_synth.rpt
-report_utilization -file lpddr4_soc_utilization_synth.rpt
+report_timing_summary -file build/lpddr4_soc_timing_synth.rpt
+report_utilization -hierarchical -file build/lpddr4_soc_utilization_hierarchical_synth.rpt
+report_utilization -file build/lpddr4_soc_utilization_synth.rpt
 
 # Optimize design
 opt_design
@@ -27,21 +27,21 @@ opt_design
 place_design
 
 # Placement report
-report_utilization -hierarchical -file lpddr4_soc_utilization_hierarchical_place.rpt
-report_utilization -file lpddr4_soc_utilization_place.rpt
-report_io -file lpddr4_soc_io.rpt
-report_control_sets -verbose -file lpddr4_soc_control_sets.rpt
-report_clock_utilization -file lpddr4_soc_clock_utilization.rpt
+report_utilization -hierarchical -file build/lpddr4_soc_utilization_hierarchical_place.rpt
+report_utilization -file build/lpddr4_soc_utilization_place.rpt
+report_io -file build/lpddr4_soc_io.rpt
+report_control_sets -verbose -file build/lpddr4_soc_control_sets.rpt
+report_clock_utilization -file build/lpddr4_soc_clock_utilization.rpt
 
 # Routing
 route_design
 
 # Routing report
 report_timing_summary -no_header -no_detailed_paths
-report_route_status -file lpddr4_soc_route_status.rpt
-report_drc -file lpddr4_soc_drc.rpt
-report_timing_summary -datasheet -max_paths 10 -file lpddr4_soc_timing.rpt
-report_power -file lpddr4_soc_power.rpt
+report_route_status -file build/lpddr4_soc_route_status.rpt
+report_drc -file build/lpddr4_soc_drc.rpt
+report_timing_summary -datasheet -max_paths 10 -file build/lpddr4_soc_timing.rpt
+report_power -file build/lpddr4_soc_power.rpt
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
 write_checkpoint -force "build/imp.dcp"
 
