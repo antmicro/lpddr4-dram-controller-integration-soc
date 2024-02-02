@@ -4,7 +4,6 @@
 include $(FIRMWARE_DIR)/headers.mk
 
 LITEX = $(shell python -c "import litex; print(litex.__path__[0])")/soc
-PICOLIBC = $(SOC_GEN_DIR)/third_party/picolibc
 
 LIBBASE_OBJ = uart.o memtest.o system.o
 FIRMWARE_OBJ = bios.o uart_stdio.o
@@ -12,7 +11,7 @@ LINKER_SCRIPT = $(FIRMWARE_DIR)/linker.ld
 
 OBJ = $(addprefix $(FIRMWARE_DIR)/,$(FIRMWARE_OBJ)) $(addprefix $(LITEX)/software/libbase/,$(LIBBASE_OBJ))
 INC = $(BUILD_DIR)/lpddr4_soc $(LITEX)/software/include $(LITEX)/software/libbase $(LITEX)/software $(LITEX)/cores/cpu/vexriscv $(DRAM_CTRL_INC)
-CFLAGS = -march=rv32im -mabi=ilp32 --specs=$(PICOLIBC)/install/picolibc.specs -T$(LINKER_SCRIPT) $(addprefix -I,$(INC))
+CFLAGS = -march=rv32im -mabi=ilp32 --specs=$(PICOLIBC_DIR)/install/picolibc.specs -T$(LINKER_SCRIPT) $(addprefix -I,$(INC))
 BIN = $(BUILD_DIR)/rom.bin
 FIRMWARE_OBJ_BUILD = $(addprefix $(BUILD_DIR)/,$(FIRMWARE_OBJ))
 LIBBASE_OBJ_BUILD = $(addprefix $(BUILD_DIR)/, $(LIBBASE_OBJ))

@@ -41,3 +41,6 @@
 [submodule "third_party/liteiclink"]
 	path = third_party/liteiclink
 	url = https://github.com/enjoy-digital/liteiclink
+[submodule "third_party/picolibc"]
+	path = third_party/picolibc
+	url = https://github.com/picolibc/picolibc.git

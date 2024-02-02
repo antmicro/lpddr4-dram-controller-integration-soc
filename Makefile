@@ -3,6 +3,7 @@ ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 THIRD_PARTY_DIR := $(ROOT_DIR)/third_party
 BUILD_DIR := $(ROOT_DIR)/build
 SOC_GEN_DIR := $(THIRD_PARTY_DIR)/linux-test-chip-soc-generator
+PICOLIBC_DIR := $(THIRD_PARTY_DIR)/picolibc
 FIRMWARE_DIR := $(ROOT_DIR)/firmware
 
 RISCV_TOOLCHAIN = riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14
@@ -60,8 +61,19 @@ riscv-toolchain: ## Install RISC-V toolchain
 	curl -L $(RISCV_TOOLCHAIN_URL) | tar -xzf -
 	mv $(RISCV_TOOLCHAIN) third_party/riscv-toolchain
 
-deps: ## Configure Python environment
+python-deps: ## Install Python dependencies
 	pip install -r requirements.txt
+
+picolibc: python-deps ## Install picolibc
+	mkdir -p $(PICOLIBC_DIR)/build
+	cd $(PICOLIBC_DIR)/build && ../scripts/do-riscv-configure \
+		-Dmultilib-list=rv32im/ilp32 \
+		-Dprefix=$(PICOLIBC_DIR)/install \
+		-Dspecsdir=$(PICOLIBC_DIR)/install
+	$(NINJA) -C $(PICOLIBC_DIR)/build
+	$(MESON) install -C $(PICOLIBC_DIR)/build --only-changed
+
+deps: picolibc ## Configure Python environment
 
 $(BUILD_DIR):
 	mkdir -p $@
