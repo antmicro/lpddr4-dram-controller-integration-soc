@@ -7,7 +7,7 @@ import litex.soc.integration.export as export
 import litex.soc.interconnect.csr_bus as csr_bus
 from litex.soc.cores.uart import UART, UARTPHY
 from litex.soc.integration.builder import *
-from litex.soc.integration.soc import SoCCSRRegion, SoCRegion
+from litex.soc.integration.soc import SoCCSRRegion, SoCRegion, SoCController, SoCIRQHandler
 from litex.soc.interconnect import wishbone
 from litex.soc.cores.led import LedChaser
 from litex.soc.cores.cpu.vexriscv import VexRiscv
@@ -19,7 +19,7 @@ from soc_generator.gen.wishbone_interconnect import WishboneRRInterconnect
 
 class LPDDR4IntegrationSoC(Module):
     def __init__(self, platform, build_dir):
-        sys_clk_freq = 50e6
+        self.sys_clk_freq = 50e6
 
         self.clock_domains.cd_sys = ClockDomain()
 
@@ -31,11 +31,16 @@ class LPDDR4IntegrationSoC(Module):
             "sram":      0x1000_0000,
             "main_ram":  0x4000_0000,
             "dram_ctrl": 0x8300_0000,
-            "csr":       0xf000_0000,
+            "csr":       0xe000_0000,
         }
         self.csr_addr_map = {
+            "ctrl": 0,
             "uart": 3,
             "timer0": 5,
+        }
+        self.irq_map = {
+            "timer0": 1,
+            "uart": 2,
         }
         self.csr_paging = 0x200
 
@@ -43,17 +48,27 @@ class LPDDR4IntegrationSoC(Module):
         self.build_dir = build_dir
 
         # CPU
-        self.submodules.core = VexRiscv(platform, variant="linux")
-        self.core.set_reset_address(self.mem_map["rom"])
-        self.submodules.timer0 = timer.Timer()
+        self.submodules.cpu = VexRiscv(platform, variant="linux")
+        self.cpu.set_reset_address(self.mem_map["sram"])
 
-        self.masters["cpu_ibus"] = self.core.ibus
-        self.masters["cpu_dbus"] = self.core.dbus
+        self.irq = SoCIRQHandler(n_irqs=31, reserved_irqs={})
+        self.irq.enable()
+
+        self.submodules.ctrl = SoCController()
+        self.comb += self.cpu.reset.eq(self.ctrl.soc_rst | self.ctrl.cpu_rst)
+
+        self.submodules.timer0 = timer.Timer()
+        self.timer0.add_uptime()
+        self.irq.add("timer0", n=self.irq_map["timer0"])
+
+        self.masters["cpu_ibus"] = self.cpu.ibus
+        self.masters["cpu_dbus"] = self.cpu.dbus
 
         # UART
         self.uart_pads = platform.request("serial", number=1)
-        self.submodules.uart_phy = UARTPHY(self.uart_pads, sys_clk_freq, 115200)
+        self.submodules.uart_phy = UARTPHY(self.uart_pads, self.sys_clk_freq, 115200)
         self.submodules.uart = UART(phy=self.uart_phy)
+        self.irq.add("uart", n=self.irq_map["uart"])
 
         # CSR bus
         csr_master = csr_bus.Interface()
@@ -71,7 +86,7 @@ class LPDDR4IntegrationSoC(Module):
 
         # ROM + RAM
         self.add_memory(self.mem_map["rom"], 0xA000, read_only=True, name="rom")
-        self.add_memory(self.mem_map["sram"], 0x1000, name="sram")
+        self.add_memory(self.mem_map["sram"], 0x40000, name="sram")
 
         # LED chaser
         led0 = Signal(name="user_led0")
@@ -80,7 +95,7 @@ class LPDDR4IntegrationSoC(Module):
         led3 = Signal(name="user_led3")
         led4 = Signal(name="user_led4")
         leds = led0, led1, led2, led3, led4
-        self.leds = LedChaser(pads=Cat(leds), sys_clk_freq=sys_clk_freq)
+        self.leds = LedChaser(pads=Cat(leds), sys_clk_freq=self.sys_clk_freq)
         self.submodules += self.leds
 
         # Wishbone DRAM interface
@@ -130,10 +145,10 @@ class LPDDR4IntegrationSoC(Module):
         for csr_group, csr_list, _, _ in self.csrs.banks:
             offset = self.csr_addr_map[csr_group] * self.csr_paging
             csr_regions[csr_group] = SoCCSRRegion(
-                origin=self.core.mem_map["csr"] + offset, busword=32, obj=csr_list
+                origin=self.mem_map["csr"] + offset, busword=32, obj=csr_list
             )
         if csr_regions:
-            header += export.get_csr_header(csr_regions, {}, self.core.mem_map["csr"])
+            header += export.get_csr_header(csr_regions, {}, self.mem_map["csr"])
             header += "#define UART_POLLING\n"
         return header
 
@@ -141,7 +156,14 @@ class LPDDR4IntegrationSoC(Module):
         header = ""
         header += "#define CONFIG_CSR_DATA_WIDTH 32\n"
         header += '#define CONFIG_CPU_NOP "nop"\n'
-        header += "#define CONFIG_CLOCK_FREQUENCY 1000000\n"
+        header += "#define CONFIG_CLOCK_FREQUENCY {}\n".format(int(self.sys_clk_freq))
+
+        if self.irq.locs:
+            header += '#define CONFIG_CPU_HAS_INTERRUPT\n'
+
+        for irq_name, irq_loc in self.irq.locs.items():
+            header += "#define {}_INTERRUPT {}\n".format(irq_name.upper(), irq_loc)
+
         return header
 
     def gen_mem_header(self):

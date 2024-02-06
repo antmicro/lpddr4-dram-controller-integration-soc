@@ -3,3 +3,6 @@ build/
 vivado*
 *.html
 *.xml
+.west
+zephyr
+modules

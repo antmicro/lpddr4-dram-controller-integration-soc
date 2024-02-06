@@ -6,4 +6,6 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       revision: main
-      import: false
+      import:
+        name-allowlist:
+          - picolibc

@@ -2,9 +2,9 @@ SHELL=/bin/bash
 ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 THIRD_PARTY_DIR := $(ROOT_DIR)/third_party
 BUILD_DIR := $(ROOT_DIR)/build
-SOC_GEN_DIR := $(THIRD_PARTY_DIR)/linux-test-chip-soc-generator
 PICOLIBC_DIR := $(THIRD_PARTY_DIR)/picolibc
 FIRMWARE_DIR := $(ROOT_DIR)/firmware
+LITEX_DIR := $(THIRD_PARTY_DIR)/litex/litex/soc
 
 RISCV_TOOLCHAIN = riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14
 RISCV_TOOLCHAIN_URL = https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/$(RISCV_TOOLCHAIN).tar.gz
@@ -44,6 +44,14 @@ TOPWRAP_GEN = $(BUILD_DIR)/topwrap/gen_dram_ctrl.yaml \
 	$(BUILD_DIR)/topwrap/gen_dram_phy.yaml \
 	$(BUILD_DIR)/topwrap/gen_lpddr4_soc.yaml
 
+INCLUDE_DIRS = \
+	$(BUILD_DIR)/dram_ctrl/software/include/generated;$\
+	$(BUILD_DIR)/dram_ctrl/software/include;$\
+	$(LITEX_DIR)/software/include;$\
+	$(LITEX_DIR)/software/libbase;$\
+	$(LITEX_DIR)/cores/cpu/vexriscv
+export INCLUDE_DIRS
+
 PYTHON = $(shell which python3)
 NINJA = $(shell which ninja)
 MESON = $(shell which meson)
@@ -52,9 +60,6 @@ PATH := $(PATH):$(PWD)/third_party/riscv64-unknown-elf-gcc/bin
 export PATH
 
 all: bitstream ## Generate verilog sources and build a bitstream
-
-include $(FIRMWARE_DIR)/headers.mk
-include $(FIRMWARE_DIR)/bios.mk
 
 riscv-toolchain: ## Install RISC-V toolchain
 	@echo Downloading RISC-V toolchain
@@ -90,7 +95,7 @@ $(BUILD_DIR)/dram_phy/gateware/dram_phy.v: | $(BUILD_DIR)
 
 $(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v: | $(BUILD_DIR)/lpddr4_soc
 	$(PYTHON) ./src/generate_lpddr4_soc.py --bitstream --headers --build-dir $(BUILD_DIR)/lpddr4_soc
-	sed -i -r 's/".+_rom.init"/"bios.init"/g' $@
+	sed -i -r 's/".+_sram.init"/"bios.init"/g' $@
 
 $(BUILD_DIR)/topwrap:
 	mkdir -p $@
@@ -102,10 +107,20 @@ soc: $(GENERATED_RTL) | $(BUILD_DIR)/topwrap ## Generate verilog sources
 $(TOPWRAP_GEN): $(GENERATED_RTL)
 	$(MAKE) soc
 
+$(FIRMWARE_DIR)/build/zephyr/zephyr.bin: FORCE
+	cd $(FIRMWARE_DIR) && west build -p -b litex_vexriscv app
+
+$(BUILD_DIR)/bios.init: $(FIRMWARE_DIR)/build/zephyr/zephyr.bin | $(BUILD_DIR)
+	hexdump -v -e '1/4 "%08X\n"' $< > $@
+
+firmware: $(BUILD_DIR)/bios.init
+
+FORCE:
+
 $(BITSTREAM): SHELL:=/bin/bash
 $(BITSTREAM): $(TOPWRAP_GEN)
+$(BITSTREAM): $(BUILD_DIR)/bios.init
 $(BITSTREAM): | $(BUILD_DIR)
-	$(MAKE) $(BUILD_DIR)/bios.init
 	cp $(BUILD_DIR)/bios.init $(BUILD_DIR)/lpddr4_soc/bios.init
 	$(VIVADO_CMD) -mode batch -source ./build.tcl
 
@@ -118,7 +133,7 @@ clean: ## Remove all generated files
 	$(RM) -r $(BUILD_DIR) .Xil
 	$(RM) vivado* usage_statistics*
 
-.PHONY: deps soc bitstream load clean
+.PHONY: deps soc bitstream load clean firmware
 
 .DEFAULT_GOAL := help
 HELP_COLUMN_SPAN = 15
