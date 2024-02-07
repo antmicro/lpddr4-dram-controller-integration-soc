@@ -95,7 +95,11 @@ soc: $(GENERATED_RTL) | $(BUILD_DIR)/topwrap ## Generate verilog sources
 $(TOPWRAP_GEN): $(GENERATED_RTL)
 	$(MAKE) soc
 
-$(ZEPHYR_BIN): $(wildcard $(FIRMWARE_DIR)/app/src/*.c)
+$(ROOT_DIR)/.west:
+	west init -l firmware
+	cd $(FIRMWARE_DIR) && west update
+
+$(ZEPHYR_BIN): $(wildcard $(FIRMWARE_DIR)/app/src/*.c) $(ROOT_DIR)/.west
 	cd $(FIRMWARE_DIR) && west build -p -b litex_vexriscv app
 
 $(BUILD_DIR)/bios.init: $(ZEPHYR_BIN) | $(BUILD_DIR)
@@ -115,11 +119,14 @@ bitstream: $(BITSTREAM) ## Generate verilog sources and build a bitstream
 load: $(BITSTREAM) ## Generate a bitstream and load it to the board's SRAM
 	openocd -f ./prog/openocd_xc7_ft4232.cfg -c "init; pld load 0 $(BITSTREAM); exit"
 
-clean: ## Remove all generated files
-	$(RM) -r $(BUILD_DIR) .Xil
+clean-zephyr: ## Remove Zephyr generated files
+	$(RM) -r $(ROOT_DIR)/.west $(ROOT_DIR)/zephyr $(ROOT_DIR)/modules $(FIRMWARE_DIR)/build
+
+clean: clean-zephyr ## Remove all generated files
+	$(RM) -r $(BUILD_DIR) $(ROOT_DIR)/.Xil
 	$(RM) vivado* usage_statistics*
 
-.PHONY: deps soc bitstream load clean firmware
+.PHONY: deps soc bitstream load clean clean-zephyr firmware
 
 .DEFAULT_GOAL := help
 HELP_COLUMN_SPAN = 15
