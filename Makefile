@@ -51,6 +51,8 @@ INCLUDE_DIRS = \
 	$(LITEX_DIR)/cores/cpu/vexriscv
 export INCLUDE_DIRS
 
+ZEPHYR_BIN = $(FIRMWARE_DIR)/build/zephyr/zephyr.bin
+
 PYTHON = $(shell which python3)
 
 PATH := $(PATH):$(PWD)/third_party/riscv64-unknown-elf-gcc/bin
@@ -93,15 +95,13 @@ soc: $(GENERATED_RTL) | $(BUILD_DIR)/topwrap ## Generate verilog sources
 $(TOPWRAP_GEN): $(GENERATED_RTL)
 	$(MAKE) soc
 
-$(FIRMWARE_DIR)/build/zephyr/zephyr.bin: FORCE
+$(ZEPHYR_BIN): $(wildcard $(FIRMWARE_DIR)/app/src/*.c)
 	cd $(FIRMWARE_DIR) && west build -p -b litex_vexriscv app
 
-$(BUILD_DIR)/bios.init: $(FIRMWARE_DIR)/build/zephyr/zephyr.bin | $(BUILD_DIR)
+$(BUILD_DIR)/bios.init: $(ZEPHYR_BIN) | $(BUILD_DIR)
 	hexdump -v -e '1/4 "%08X\n"' $< > $@
 
 firmware: $(BUILD_DIR)/bios.init
-
-FORCE:
 
 $(BITSTREAM): SHELL:=/bin/bash
 $(BITSTREAM): $(TOPWRAP_GEN)
