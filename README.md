@@ -13,6 +13,7 @@ All the components are stand-alone, either generated or existing Verilog RTL des
    ```
    sudo apt-get install --no-install-recommends build-essential python3-setuptools python3-pip ninja-build gcc-riscv64-unknown-elf meson git openocd
    ```
+ - Zephyr development environment configured in your system, follow [Zephyr Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to install it.
 
 ### Steps
 
@@ -35,6 +36,11 @@ make deps
 Generate the SoC and DRAM memory controller
 ```
 make soc
+```
+
+Setup Zephyr workspace and generate firmware for integration SoC:
+```
+make firmware
 ```
 
 Build the bitstream
