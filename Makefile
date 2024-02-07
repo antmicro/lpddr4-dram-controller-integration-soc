@@ -2,7 +2,6 @@ SHELL=/bin/bash
 ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 THIRD_PARTY_DIR := $(ROOT_DIR)/third_party
 BUILD_DIR := $(ROOT_DIR)/build
-PICOLIBC_DIR := $(THIRD_PARTY_DIR)/picolibc
 FIRMWARE_DIR := $(ROOT_DIR)/firmware
 LITEX_DIR := $(THIRD_PARTY_DIR)/litex/litex/soc
 
@@ -53,8 +52,6 @@ INCLUDE_DIRS = \
 export INCLUDE_DIRS
 
 PYTHON = $(shell which python3)
-NINJA = $(shell which ninja)
-MESON = $(shell which meson)
 
 PATH := $(PATH):$(PWD)/third_party/riscv64-unknown-elf-gcc/bin
 export PATH
@@ -66,19 +63,8 @@ riscv-toolchain: ## Install RISC-V toolchain
 	curl -L $(RISCV_TOOLCHAIN_URL) | tar -xzf -
 	mv $(RISCV_TOOLCHAIN) third_party/riscv-toolchain
 
-python-deps: ## Install Python dependencies
+deps: ## Configure Python environment
 	pip install -r requirements.txt
-
-picolibc: python-deps ## Install picolibc
-	mkdir -p $(PICOLIBC_DIR)/build
-	cd $(PICOLIBC_DIR)/build && ../scripts/do-riscv-configure \
-		-Dmultilib-list=rv32im/ilp32 \
-		-Dprefix=$(PICOLIBC_DIR)/install \
-		-Dspecsdir=$(PICOLIBC_DIR)/install
-	$(NINJA) -C $(PICOLIBC_DIR)/build
-	$(MESON) install -C $(PICOLIBC_DIR)/build --only-changed
-
-deps: picolibc ## Configure Python environment
 
 $(BUILD_DIR):
 	mkdir -p $@
