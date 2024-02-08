@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /delete-node/ &ram0;
+/delete-node/ &uart0;
+/delete-node/ &timer0;
 
 &{/cpus/cpu@0} {
 	clock-frequency = <50000000>;
@@ -14,21 +16,37 @@
 		device_type = "memory";
 		reg = <0x10000000 0x40000>;
 	};
-};
-
-&uart0 {
-	reg = <0xe0000600 0x4
-			0xe0000604 0x4
-			0xe0000608 0x4
-			0xe000060c 0x4
-			0xe0000610 0x4
-			0xe0000614 0x4
-			0xe0000618 0x4
-			0xe000061c 0x4>;
-};
-
-&timer0 {
-	reg = <0xe0000a00 0x4
+	soc {
+		uart0: serial@0xe0000600 {
+			compatible = "litex,uart0";
+			interrupt-parent = <&intc0>;
+			interrupts = <2 10>;
+			reg = <0xe0000600 0x4
+				0xe0000604 0x4
+				0xe0000608 0x4
+				0xe000060c 0x4
+				0xe0000610 0x4
+				0xe0000614 0x4
+				0xe0000618 0x4
+				0xe000061c 0x4>;
+			reg-names =
+				"rxtx",
+				"txfull",
+				"rxempty",
+				"ev_status",
+				"ev_pending",
+				"ev_enable",
+				"txempty",
+				"rxfull";
+			current-speed = <115200>;
+			status = "okay";
+		};
+	};
+	timer0: timer@0xe0000a00 {
+		compatible = "litex,timer0";
+		interrupt-parent = < &intc0 >;
+		interrupts = < 0x1 0x0 >;
+		reg = <0xe0000a00 0x4
 			0xe0000a04 0x4
 			0xe0000a08 0x4
 			0xe0000a0c 0x4
@@ -38,6 +56,18 @@
 			0xe0000a1c 0x4
 			0xe0000a20 0x4
 			0xe0000a24 0x8>;
+		reg-names = "load",
+			    "reload",
+			    "en",
+			    "update_value",
+			    "value",
+			    "ev_status",
+			    "ev_pending",
+			    "ev_enable",
+			    "uptime_latch",
+			    "uptime_cycles";
+		status = "okay";
+	};
 };
 
 &eth0 {
