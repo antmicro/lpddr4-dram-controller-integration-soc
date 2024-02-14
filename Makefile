@@ -119,10 +119,13 @@ bitstream: $(BITSTREAM) ## Generate verilog sources and build a bitstream
 load: $(BITSTREAM) ## Generate a bitstream and load it to the board's SRAM
 	openocd -f ./prog/openocd_xc7_ft4232.cfg -c "init; pld load 0 $(BITSTREAM); exit"
 
-clean-zephyr: ## Remove Zephyr generated files
-	$(RM) -r $(ROOT_DIR)/.west $(ROOT_DIR)/zephyr $(ROOT_DIR)/modules $(FIRMWARE_DIR)/build
+clean-zephyr: ## Remove Zephyr
+	$(RM) -r $(ROOT_DIR)/.west $(ROOT_DIR)/zephyr $(ROOT_DIR)/modules
 
-clean: clean-zephyr ## Remove all generated files
+clean-firmware: ## Remove Zephyr generated files
+	$(RM) -r $(FIRMWARE_DIR)/build
+
+clean: clean-firmware ## Remove all generated files
 	$(RM) -r $(BUILD_DIR) $(ROOT_DIR)/.Xil
 	$(RM) vivado* usage_statistics*
 
