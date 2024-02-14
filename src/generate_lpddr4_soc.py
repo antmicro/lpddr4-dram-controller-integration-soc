@@ -71,9 +71,9 @@ class LPDDR4IntegrationSoC(Module):
         self.irq.add("uart", n=self.irq_map["uart"])
 
         # CSR bus
-        csr_master = csr_bus.Interface()
+        csr_master = csr_bus.Interface(data_width=32)
         self.submodules.csrs = csr_bus.CSRBankArray(
-            self, lambda name, _: self.csr_addr_map[name], paging=self.csr_paging
+            self, lambda name, _: self.csr_addr_map[name],data_width=32, paging=self.csr_paging
         )
         if self.csrs.get_buses():
             self.submodules += csr_bus.Interconnect(master=csr_master, slaves=self.csrs.get_buses())
