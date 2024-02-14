@@ -13,6 +13,7 @@ from litex.soc.cores.led import LedChaser
 from litex.soc.cores.cpu.vexriscv import VexRiscv
 from litex.soc.cores import timer
 from migen import *
+from litex.soc.interconnect.csr_eventmanager import *
 
 from soc_generator.gen.amaranth_wrapper import Amaranth2Migen
 from soc_generator.gen.wishbone_interconnect import WishboneRRInterconnect
@@ -48,7 +49,7 @@ class LPDDR4IntegrationSoC(Module):
         self.build_dir = build_dir
 
         # CPU
-        self.submodules.cpu = VexRiscv(platform, variant="linux")
+        self.submodules.cpu = VexRiscv(platform, variant="standard")
         self.cpu.set_reset_address(self.mem_map["sram"])
 
         self.irq = SoCIRQHandler(n_irqs=31, reserved_irqs={})
@@ -110,6 +111,14 @@ class LPDDR4IntegrationSoC(Module):
 
         # Wishbone interconnect
         self.create_interconnect(self.masters, self.slaves)
+        for name, loc in sorted(self.irq.locs.items()):
+            module = getattr(self, name)
+            ev = None
+            if hasattr(module, "ev"):
+                ev = module.ev
+            elif isinstance(module, EventManager):
+                ev = module
+            self.comb += self.cpu.interrupt[loc].eq(ev.irq)
 
         # I/O
         self.ios = set()
