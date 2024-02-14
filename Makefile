@@ -97,7 +97,8 @@ $(TOPWRAP_GEN): $(GENERATED_RTL)
 
 $(ROOT_DIR)/.west:
 	west init -l firmware
-	cd $(FIRMWARE_DIR) && west update
+	cd $(FIRMWARE_DIR) && west update && west zephyr-export
+	pip install -r zephyr/scripts/requirements.txt
 
 $(ZEPHYR_BIN): $(wildcard $(FIRMWARE_DIR)/app/src/*.c) $(ROOT_DIR)/.west
 	cd $(FIRMWARE_DIR) && west build -p -b litex_vexriscv app
