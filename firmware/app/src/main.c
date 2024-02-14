@@ -12,11 +12,15 @@
 #include <zephyr/usb/usb_device.h>
 #include <ctype.h>
 
-// #include "csr.h"
+int main(void)
+{
+	printf("Hello world! %s\n", CONFIG_BOARD);
 
-
-int main(void) {
-	// printf("Hello world! %s\n", CONFIG_BOARD);
+	while (1)
+	{
+		printf("Hello world! %s\n", CONFIG_BOARD);
+		k_msleep(1);
+	}
 
 	return 0;
 }
