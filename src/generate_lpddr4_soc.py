@@ -56,7 +56,7 @@ class LPDDR4IntegrationSoC(Module):
         self.irq.enable()
 
         self.submodules.ctrl = SoCController()
-        self.comb += self.cpu.reset.eq(self.ctrl.soc_rst | self.ctrl.cpu_rst)
+        self.comb += self.cpu.reset.eq(self.ctrl.soc_rst | self.ctrl.cpu_rst | self.cd_sys.rst)
 
         self.submodules.timer0 = timer.Timer()
         self.timer0.add_uptime()
