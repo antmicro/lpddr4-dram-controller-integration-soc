@@ -60,21 +60,38 @@ First UART is connected to the integration SoC UART, second UART is connected to
 
 Example UART output from the integration SoC:
 ```
-Initialize training.
-Waiting for training finish...
-DRAM training finished.
-Writing to 0x40000000-0x40100000...
-Reading 0x40000000-0x40100000...
-Test finished, 0 memory mismatches detected.
-===========================
-        TEST PASSED!
-===========================
-Available memory access commands:
-write - 'w <address> <value> <count>'
-read - 'r <address> <count>'
-<address> and <value> should be passed in hexadecimal format without '0x' prefix.
+*** Booting Zephyr OS build v3.6.0-rc2-22-g97fce0939205 ***
+Initializing memory...
 
->
+
+tristan-lpddr4:~$ Memory training finished!
+
+tristan-lpddr4:~$ mem read 0x40000000 8
+Reading at 0x40000000-0x40000020
+Value at 0x40000000: 0x68dbb6f3
+Value at 0x40000004: 0x44d1588d
+Value at 0x40000008: 0x7d5abe6b
+Value at 0x4000000c: 0x4e3c0cc8
+Value at 0x40000010: 0xad64c9fb
+Value at 0x40000014: 0x4a3111e3
+Value at 0x40000018: 0x6cfcd5fe
+Value at 0x4000001c: 0x6b180e4c
+Finished memory read.
+tristan-lpddr4:~$ mem write 0x40000000 0xdeadbeef 2
+Writing 0xdeadbeef at 0x40000000-0x40000008
+Finished memory write.
+tristan-lpddr4:~$ mem read 0x40000000 8
+Reading at 0x40000000-0x40000020
+Value at 0x40000000: 0xdeadbeef
+Value at 0x40000004: 0xdeadbeef
+Value at 0x40000008: 0x7d5abe6b
+Value at 0x4000000c: 0x4e3c0cc8
+Value at 0x40000010: 0xad64c9fb
+Value at 0x40000014: 0x4a3111e3
+Value at 0x40000018: 0x6cfcd5fe
+Value at 0x4000001c: 0x6b180e4c
+Finished memory read.
+tristan-lpddr4:~$
 ```
 
 Example UART output from the PHY SoC:
@@ -103,7 +120,6 @@ module:  0  1
     rb:  7  7
   rdly:  9  8
 DRAM initialization complete!
-
 Available memory access commands:
 write - 'w <bank> <row> <column> <value>'
 read - 'r <bank> <row> <column>'
