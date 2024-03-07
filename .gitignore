@@ -1,6 +1,6 @@
+.vscode
 build/
 .Xil/
-vivado*
 *.html
 *.xml
 .west

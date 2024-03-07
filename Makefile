@@ -1,3 +1,6 @@
+# Copyright (C) 2023-2024 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
 SHELL=/bin/bash
 ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 THIRD_PARTY_DIR := $(ROOT_DIR)/third_party
@@ -75,11 +78,11 @@ $(BUILD_DIR)/lpddr4_soc:
 	mkdir -p $@
 
 $(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v: | $(BUILD_DIR)
-	$(PYTHON) ./third_party/tristan-dram-controller/gen.py ./tristan-ctrl.yml --output $(BUILD_DIR)/dram_ctrl
+	$(PYTHON) ./third_party/tristan-dram-controller/gen.py ./config/tristan-ctrl.yml --output $(BUILD_DIR)/dram_ctrl
 
 $(BUILD_DIR)/dram_phy/gateware/dram_phy.v: | $(BUILD_DIR)
-	$(PYTHON) ./third_party/tristan-dram-phy/src/gen.py ./tristan-phy.yml 1 --output $(BUILD_DIR)/dram_phy
-	$(PYTHON) ./third_party/tristan-dram-phy/src/gen.py ./tristan-phy.yml 2 --output $(BUILD_DIR)/dram_phy
+	$(PYTHON) ./third_party/tristan-dram-phy/src/gen.py ./config/tristan-phy.yml 1 --output $(BUILD_DIR)/dram_phy
+	$(PYTHON) ./third_party/tristan-dram-phy/src/gen.py ./config/tristan-phy.yml 2 --output $(BUILD_DIR)/dram_phy
 
 $(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v: | $(BUILD_DIR)/lpddr4_soc
 	$(PYTHON) ./src/generate_lpddr4_soc.py --bitstream --headers --build-dir $(BUILD_DIR)/lpddr4_soc
@@ -113,7 +116,7 @@ $(BITSTREAM): $(TOPWRAP_GEN)
 $(BITSTREAM): $(BUILD_DIR)/bios.init
 $(BITSTREAM): | $(BUILD_DIR)
 	cp $(BUILD_DIR)/bios.init $(BUILD_DIR)/lpddr4_soc/bios.init
-	$(VIVADO_CMD) -mode batch -source ./build.tcl
+	cd $(BUILD_DIR) && $(VIVADO_CMD) -mode batch -source ../vivado/build.tcl
 
 bitstream: $(BITSTREAM) ## Generate verilog sources and build a bitstream
 
@@ -128,7 +131,6 @@ clean-firmware: ## Remove Zephyr generated files
 
 clean: clean-firmware ## Remove all generated files
 	$(RM) -r $(BUILD_DIR) $(ROOT_DIR)/.Xil
-	$(RM) vivado* usage_statistics*
 
 .PHONY: deps soc bitstream load clean clean-zephyr firmware
 

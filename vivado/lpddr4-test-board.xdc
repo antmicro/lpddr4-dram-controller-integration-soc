@@ -1,3 +1,6 @@
+# Copyright (C) 2023-2024 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
 ################################################################################
 # IO constraints
 ################################################################################
@@ -222,18 +225,6 @@ set_property IOSTANDARD LVCMOS33 [get_ports {user_led4}]
 # user_btn:0
 set_property LOC E8 [get_ports {user_btn0}]
 set_property IOSTANDARD LVCMOS33 [get_ports {user_btn0}]
-
-# user_btn:1
-# set_property LOC B8 [get_ports {user_btn1}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_btn1}]
-
-# user_btn:2
-# set_property LOC C9 [get_ports {user_btn2}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_btn2}]
-
-# user_btn:3
-# set_property LOC E9 [get_ports {user_btn3}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {user_btn3}]
 
 ################################################################################
 # Design constraints
