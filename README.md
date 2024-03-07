@@ -2,9 +2,9 @@
 
 Copyright (c) 2023-2024 [Antmicro](https://antmicro.com)
 
-This repository contains a Xilinx Vivado project for Antmicro LPDDR4 Test Board, which integrates Tristan LPDDR4 PHY (LiteDRAM-derived) and Tristan DRAM controller (a.k.a. MC, based on LiteDRAM). There will be also a demonstration SoC, which uses the MC+PHY complex to test its operation.
+This repository contains a Xilinx Vivado project for Antmicro LPDDR4 Test Board, which integrates Tristan LPDDR4 PHY and Tristan DRAM controller. Integration SoC runs a Zephyr application that trains LPDDR4 memory module and exposes interface to execute write/read operations on the trained module.
 
-All the components are stand-alone, either generated or existing Verilog RTL designs. They are integrated in `rtl/top.v` top-level module.
+All the components are standalone generated FPGA designs. They are integrated in [project.yml](topwrap/project.yml) via [Topwrap](https://github.com/antmicro/topwrap) tool.
 
 ## Building
 
