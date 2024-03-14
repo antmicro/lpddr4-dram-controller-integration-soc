@@ -1,0 +1,28 @@
+name: lpddr4-integration
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  generate:
+    runs-on: ubuntu:latest
+    container:
+      image: debian:bookworm
+
+    steps:
+    - uses: actions/checkout@v4.1.0
+      with:
+        submodules: recursive
+
+    - name: Generate netlist and firmware
+      run: ./.github/scripts/ci.sh
+
+    - name: Save artifacts
+      run: |
+        mkdir artifacts
+        cp -r build artifacts
+
+    - uses: actions/upload-artifact@v4.1.0
+      if: success()
+      with:
+        name: "${{ github.job }}"
+        path: artifacts
