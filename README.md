@@ -13,7 +13,7 @@ All the components are standalone generated FPGA designs. They are integrated in
  - Xilinx Vivado 2020.2
  - System packages (Debian) that can be installed with:
    ```
-   sudo apt-get install --no-install-recommends build-essential python3-setuptools python3-pip ninja-build gcc-riscv64-unknown-elf meson git openocd
+   sudo apt-get install --no-install-recommends build-essential python3-setuptools python3-pip ninja-build gcc-riscv64-unknown-elf meson git openocd antlr4 libantlr4-runtime-dev
    ```
  - Zephyr development environment configured in your system, follow [Zephyr Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to install it.
 
