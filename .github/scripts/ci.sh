@@ -34,6 +34,7 @@ install_system_packages() {
         build-essential \
         cmake \
         gcc-riscv64-unknown-elf \
+        picolibc-riscv64-unknown-elf \
         git \
         make \
         python3 \

@@ -3,8 +3,64 @@
 
 # This file is assumed to be run in Vivado from a build directory
 
+# ===
+
+# Process .f and return filelist
+proc process_filelist {filelist_path files_dir} {
+    set filelist    [list]
+    set fd_filelist [open "${filelist_path}" r]
+    while {[gets $fd_filelist line] >= 0} {
+        if {![regexp {^(\s*#.*|^$)} $line]} {
+            set filepath "[file normalize "${files_dir}/${line}"]"
+            if {![regexp {^-I} $line]} {
+            if {![file exists $filepath]} {
+                puts "ERROR: File not found '$filepath'"
+                exit 2
+            } else {
+                lappend filelist $filepath
+                puts $filepath
+            }}
+        }
+    }
+    close $fd_filelist
+    return $filelist
+}
+
+proc process_filelist_includes {filelist_path files_dir} {
+    set filelist    [list]
+    set fd_filelist [open "${filelist_path}" r]
+    while {[gets $fd_filelist line] >= 0} {
+        if {![regexp {^(\s*#.*|^$)} $line]} {
+            if {[regexp {^-I} $line]} {
+                set line [string map {"-I" ""} $line ]
+                set filepath "[file normalize "${files_dir}/${line}"]"
+                if {![file exists $filepath]} {
+                    puts "ERROR: File not found '$filepath'"
+                    exit 2
+                } else {
+                    lappend filelist $filepath
+                    puts $filepath
+                }
+            }
+        }
+    }
+    close $fd_filelist
+    return $filelist
+}
+
+set dram_phy_files [process_filelist "../third_party/tristan-dram-phy/build/filelist.f" ""]
+set dram_phy_includes [process_filelist_includes "../third_party/tristan-dram-phy/build/filelist.f" ""]
+set_property include_dirs $dram_phy_includes [current_fileset]
+
+foreach {file} $dram_phy_files {
+    read_verilog $file
+}
+
+# ===
+
 # Read design sources
-read_verilog "dram_phy/gateware/dram_phy.v"
+read_verilog "../rtl/dram_phy_wrapper.sv"
+read_verilog "../rtl/dram_phy.v"
 read_verilog "dram_ctrl/gateware/dram_ctrl.v"
 read_verilog "lpddr4_soc/wishbone_interconnect.v"
 read_verilog "lpddr4_soc/lpddr4_soc.v"
@@ -27,6 +83,17 @@ report_utilization -file lpddr4_soc_utilization_synth.rpt
 
 # Optimize design
 opt_design
+
+# Constrain PHY core
+# constrain PHY core
+set phy_pblock "phy"
+set phy_area   {CLOCKREGION_X1Y1}
+
+create_pblock $phy_pblock
+add_cells_to_pblock -quiet [get_pblocks $phy_pblock] [get_cells -quiet -hier -leaf u_phy_core -filter {REF_NAME =~ "LUT*"}]
+add_cells_to_pblock -quiet [get_pblocks $phy_pblock] [get_cells -quiet -hier -leaf u_phy_core -filter {REF_NAME =~ "FD*"}]
+add_cells_to_pblock -quiet [get_pblocks $phy_pblock] [get_cells -quiet -hier -leaf u_phy_core -filter {REF_NAME =~ "LD*"}]
+resize_pblock [get_pblocks $phy_pblock] -add $phy_area
 
 # Placement
 place_design

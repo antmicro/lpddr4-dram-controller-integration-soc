@@ -7,6 +7,7 @@ THIRD_PARTY_DIR := $(ROOT_DIR)/third_party
 BUILD_DIR := $(ROOT_DIR)/build
 FIRMWARE_DIR := $(ROOT_DIR)/firmware
 LITEX_DIR := $(THIRD_PARTY_DIR)/litex/litex/soc
+PHY_FILELIST := $(THIRD_PARTY_DIR)/tristan-dram-phy/build/filelist.f
 
 RISCV_TOOLCHAIN = riscv64-unknown-elf-gcc-10.1.0-2020.08.2-x86_64-linux-ubuntu14
 RISCV_TOOLCHAIN_URL = https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.08/$(RISCV_TOOLCHAIN).tar.gz
@@ -29,7 +30,7 @@ OBJCOPY = $(GCC_PREFIX)-objcopy
 # Use system Vivado command if available, otherwise source settings64.sh
 VIVADO = $(shell which vivado)
 ifeq (, $(VIVADO))
-	VIVADO_VER  ?= 2020.2
+	VIVADO_VER  ?= 2023.2
 	VIVADO_PATH ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
 	VIVADO_CMD  ?= source $(VIVADO_PATH)/settings64.sh && vivado
 else
@@ -38,9 +39,10 @@ endif
 
 PART          = xc7k70tfbg484-1
 BITSTREAM     = $(BUILD_DIR)/top.bit
-GENERATED_RTL = $(BUILD_DIR)/dram_phy/gateware/dram_phy.v \
-	$(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v \
+GENERATED_RTL = $(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v \
 	$(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v
+
+WRAPPER_RTL = $(ROOT_DIR)/rtl/dram_phy.v
 
 TOPWRAP_GEN = $(BUILD_DIR)/topwrap/gen_dram_ctrl.yaml \
 	$(BUILD_DIR)/topwrap/gen_dram_phy.yaml \
@@ -80,9 +82,8 @@ $(BUILD_DIR)/lpddr4_soc:
 $(BUILD_DIR)/dram_ctrl/gateware/dram_ctrl.v: | $(BUILD_DIR)
 	$(PYTHON) ./third_party/tristan-dram-controller/gen.py ./config/tristan-ctrl.yml --output $(BUILD_DIR)/dram_ctrl
 
-$(BUILD_DIR)/dram_phy/gateware/dram_phy.v: | $(BUILD_DIR)
-	$(PYTHON) ./third_party/tristan-dram-phy/src/gen.py ./config/tristan-phy.yml 1 --output $(BUILD_DIR)/dram_phy
-	$(PYTHON) ./third_party/tristan-dram-phy/src/gen.py ./config/tristan-phy.yml 2 --output $(BUILD_DIR)/dram_phy
+$(PHY_FILELIST): | $(BUILD_DIR)
+	cd $(THIRD_PARTY_DIR)/tristan-dram-phy/ && $(MAKE) gen firmware-build PHY_CONFIG=$(ROOT_DIR)/config/tristan-phy.yml
 
 $(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v: | $(BUILD_DIR)/lpddr4_soc
 	$(PYTHON) ./src/generate_lpddr4_soc.py --bitstream --headers --build-dir $(BUILD_DIR)/lpddr4_soc
@@ -91,7 +92,7 @@ $(BUILD_DIR)/lpddr4_soc/lpddr4_soc.v: | $(BUILD_DIR)/lpddr4_soc
 $(BUILD_DIR)/topwrap:
 	mkdir -p $@
 
-soc: $(GENERATED_RTL) | $(BUILD_DIR)/topwrap ## Generate verilog sources
+soc: $(GENERATED_RTL) $(WRAPPER_RTL) | $(BUILD_DIR)/topwrap $(PHY_FILELIST) ## Generate verilog sources
 	cd $(BUILD_DIR)/topwrap && fpga_topwrap parse $?
 	fpga_topwrap build --design topwrap/project.yml --part $(PART)
 
@@ -123,13 +124,16 @@ bitstream: $(BITSTREAM) ## Generate verilog sources and build a bitstream
 load: $(BITSTREAM) ## Generate a bitstream and load it to the board's SRAM
 	openocd -f ./prog/openocd_xc7_ft4232.cfg -c "init; pld load 0 $(BITSTREAM); exit"
 
+clean-phy: ## Remove PHY build
+	-cd $(THIRD_PARTY_DIR)/tristan-dram-phy && $(MAKE) clean
+
 clean-zephyr: ## Remove Zephyr
 	$(RM) -r $(ROOT_DIR)/.west $(ROOT_DIR)/zephyr $(ROOT_DIR)/modules
 
 clean-firmware: ## Remove Zephyr generated files
 	$(RM) -r $(FIRMWARE_DIR)/build
 
-clean: clean-firmware ## Remove all generated files
+clean: clean-firmware clean-phy ## Remove all generated files
 	$(RM) -r $(BUILD_DIR) $(ROOT_DIR)/.Xil
 
 .PHONY: deps soc bitstream load clean clean-zephyr firmware

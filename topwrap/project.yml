@@ -90,8 +90,8 @@ design:
       dfi_rddata_valid_w7: [phy_core_inst, dfi_rddata_valid_w7]
 
     phy_core_inst:
-      clk: clk100
-      rst: user_btn0
+      clk_ext: clk100
+      rst_ext: user_btn0
 
       serial_rx: serial2_rx
       serial_tx: serial2_tx
