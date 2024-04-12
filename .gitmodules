@@ -1,9 +1,9 @@
 [submodule "third_party/tristan-dram-phy"]
 	path = third_party/tristan-dram-phy
-	url = ../tristan-dram-phy.git
+	url = https://github.com/antmicro/ibex-soc
 [submodule "third_party/tristan-dram-controller"]
 	path = third_party/tristan-dram-controller
-	url = ../tristan-dram-controller.git
+	url = https://github.com/antmicro/lpddr4-dram-controller
 [submodule "third_party/migen"]
 	path = third_party/migen
 	url = https://github.com/m-labs/migen
@@ -27,10 +27,10 @@
 	url = https://github.com/antmicro/litex-boards
 [submodule "third_party/linux-test-chip-soc-generator"]
 	path = third_party/linux-test-chip-soc-generator
-	url = ../linux-test-chip-soc-generator.git
+	url = https://github.com/antmicro/soc-generator
 [submodule "third_party/tristan-amaranth-soc"]
 	path = third_party/tristan-amaranth-soc
-	url = ../amaranth-soc.git
+	url = https://github.com/antmicro/amaranth-soc
 [submodule "third_party/liteeth"]
 	path = third_party/liteeth
 	url = https://github.com/antmicro/liteeth.git
