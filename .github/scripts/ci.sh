@@ -6,6 +6,10 @@ set -e
 
 ZEPHYR_SDK_VERSION="0.16.5"
 
+if [[ -n "${GITHUB_WORKFLOW:-}" ]]; then
+    SUDO=sudo
+fi
+
 begin_command_group() {
     if [[ -n "${GITHUB_WORKFLOW:-}" ]]; then
         echo "::group::$*"
@@ -29,8 +33,8 @@ log_cmd() {
 
 install_system_packages() {
     begin_command_group "Install system packages"
-    log_cmd apt-get update -qq
-    log_cmd apt-get install -y --no-install-recommends \
+    log_cmd "$SUDO" apt-get update -qq
+    log_cmd "$SUDO" apt-get install -y --no-install-recommends \
         build-essential \
         cmake \
         gcc-riscv64-unknown-elf \
