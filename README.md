@@ -2,7 +2,7 @@
 
 Copyright (c) 2023-2024 [Antmicro](https://antmicro.com)
 
-This repository contains a Xilinx Vivado project for Antmicro LPDDR4 Test Board, which integrates Tristan LPDDR4 PHY and Tristan DRAM controller. Integration SoC runs a Zephyr application that trains LPDDR4 memory module and exposes interface to execute write/read operations on the trained module.
+This repository contains an AMD Vivado project for Antmicro LPDDR4 Test Board, which integrates Tristan LPDDR4 PHY and Tristan DRAM controller. Integration SoC runs a Zephyr application that trains LPDDR4 memory module and exposes interface to execute write/read operations on the trained module.
 
 All the components are standalone generated FPGA designs. They are integrated in [project.yml](topwrap/project.yml) via [Topwrap](https://github.com/antmicro/topwrap) tool.
 
@@ -10,7 +10,7 @@ All the components are standalone generated FPGA designs. They are integrated in
 
 ### Prerequisities
 
- - Xilinx Vivado 2020.2
+ - AMD Vivado 2020.2
  - System packages (Debian) that can be installed with:
    ```
    sudo apt-get install --no-install-recommends build-essential python3-setuptools python3-pip ninja-build gcc-riscv64-unknown-elf meson git openocd antlr4 libantlr4-runtime-dev
